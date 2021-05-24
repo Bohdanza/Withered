@@ -14,19 +14,21 @@ namespace floating_island
     public class plant : map_object
     {
         List<Texture2D> textures = new List<Texture2D>();
-        public override int what_to_do_with { get; protected set; }
+        public override List<int> what_to_do_with { get; protected set; } = new List<int>();
         public override float x { get; protected set; }
         public override float y { get; protected set; }
         public override int type { get; protected set; }
         private int img_phase, grow_stage;
         public int max_grow { get; private set; }
         public string action { get; private set; }
+        public override bool selected { get; protected set; }
 
         //!IMPORTANT!
         //hitbox points are stored as values that must be ADDED (even for the left hitbox corner) to get the real hitbox
         public override Vector2 hitbox_left { get; protected set; }
         public override Vector2 hitbox_right { get; protected set; }
-       
+        public List<button> action_buttons { get; protected set; } = new List<button>();
+
         public plant(ContentManager cm, float x, float y, int type, int grow_stage)
         {
             this.x = x;
@@ -48,6 +50,9 @@ namespace floating_island
                 this.hitbox_right = new Vector2(float.Parse(tmp_list[3]), float.Parse(tmp_list[4]));
             }
 
+            this.action_buttons.Add(new button(1, 0, 0, 48, 48, cm.Load<Texture2D>("2actbtn0"), cm.Load<Texture2D>("2actbtn1")));
+            this.what_to_do_with.Add(2);
+
             this.update_texture(cm, true);
         }
 
@@ -66,6 +71,9 @@ namespace floating_island
 
             this.hitbox_left = new Vector2(sample_plant.hitbox_left.X, sample_plant.hitbox_left.Y);
             this.hitbox_right = new Vector2(sample_plant.hitbox_right.X, sample_plant.hitbox_right.Y);
+
+            this.action_buttons.Add(new button(1, 0, 0, 48, 48, cm.Load<Texture2D>("2actbtn0"), cm.Load<Texture2D>("2actbtn1")));
+            this.what_to_do_with.Add(2);
 
             this.update_texture(cm, true);
         }
@@ -97,8 +105,45 @@ namespace floating_island
             }
         }
 
-        public override void update(ContentManager cm, island my_island, int my_index)
+        public override void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
         {
+            bool action_changes = false;
+
+            if (this.selected)
+            {
+                foreach (var current_button in this.action_buttons)
+                {
+                    bool pac = current_button.pressed;
+
+                    current_button.update();
+
+                    bool cac = current_button.pressed;
+
+                    if (pac != cac)
+                    {
+                        action_changes = true;
+                    }
+                }
+            }
+
+            if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
+            {
+                float tmpw = this.textures[this.img_phase].Width / 966f / 2f;
+                float tmph = this.textures[this.img_phase].Height / 686f / 2f;
+
+                if (!somethingSelected && my_island.mx >= this.x - tmpw && my_island.mx <= this.x + tmpw && my_island.my <= this.y && my_island.my >= this.y - tmph * 2)
+                {
+                    this.selected = true;
+                }
+                else
+                {
+                    if (!action_changes)
+                    {
+                        this.selected = false;
+                    }
+                }
+            }
+
             this.update_texture(cm);
         }
 
@@ -107,7 +152,36 @@ namespace floating_island
             int tmpw = this.textures[this.img_phase].Width;
             int tmph = this.textures[this.img_phase].Height;
 
-            spriteBatch.Draw(this.textures[this.img_phase], new Vector2(x-tmpw/2, y-tmph), Color.White);
+            int sumx = 0;
+
+            foreach (var current_button in this.action_buttons)
+            {
+                sumx += (int)(current_button.normal_texture.Width * 1.1f);
+            }
+
+            int dx = x - (int)(sumx / 2);
+
+            foreach (var current_button in this.action_buttons)
+            {
+                current_button.x = dx;
+                current_button.y = y - tmph - (int)(current_button.normal_texture.Height * 1.1);
+
+                dx += (int)(current_button.normal_texture.Width * 1.1f);
+            }
+
+            if (this.selected)
+            {
+                spriteBatch.Draw(this.textures[this.img_phase], new Vector2(x - tmpw / 2, y - tmph), Color.Red);
+               
+                foreach (var current_button in this.action_buttons)
+                {
+                    current_button.draw(spriteBatch);
+                }
+            }
+            else
+            {
+                spriteBatch.Draw(this.textures[this.img_phase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
+            }
         }
 
         public override bool contains_point(Vector2 point)

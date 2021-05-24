@@ -15,7 +15,7 @@ namespace floating_island
     {
         public override float x { get; protected set; }
         public override float y { get; protected set; }
-        public override int what_to_do_with { get; protected set; } = -1;
+        public override List<int> what_to_do_with { get; protected set; } = new List<int>();
 
         public float speed { get; private set; }
         public List<Vector2> path { get; private set; } = new List<Vector2>();
@@ -25,13 +25,10 @@ namespace floating_island
         List<Texture2D> textures = new List<Texture2D>();
         private int img_phase;
 
-        private MouseState oldState;
-
         public string action { get; private set; }
         public string direction { get; protected set; }
-        public bool selected { get; protected set; }
+        public override bool selected { get; protected set; }
 
-        public int time_since_last_press { get; private set; }
         public override int type { get; protected set; }
 
         public List<int> action_types { get; protected set; } = new List<int>();
@@ -41,8 +38,6 @@ namespace floating_island
         {
             this.speed = 0.001f;
             this.type = type;
-
-            this.time_since_last_press = 0;
 
             this.x = x;
             this.y = y;
@@ -62,60 +57,35 @@ namespace floating_island
                 this.action_buttons.Add(new button(1, 0, 0, tmpw, tmph, tmptex0, tmptex1));
             }
 
-            this.oldState = Mouse.GetState();
-
             this.update_texture(cm, true);
         }
         
-        public override void update(ContentManager cm, island my_island, int my_index)
+        public override void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
         {
             bool action_changes = false;
-
-            foreach(var current_button in this.action_buttons)
-            {
-                bool pac = current_button.pressed;
-
-                current_button.update();
-
-                bool cac = current_button.pressed;
-
-                if (pac != cac)
-                {
-                    action_changes = true;
-                }
-            }
-
-            string pact = this.action, pdir = this.direction;
             
+            string pact = this.action, pdir = this.direction;
+
             float px = this.x;
             float py = this.y;
 
-            this.time_since_last_press++;
-
-            if (this.action == "wa")
+            if (this.selected)
             {
-                if (this.direction == "w")
+                foreach (var current_button in this.action_buttons)
                 {
-                    this.y -= this.speed;
-                }
+                    bool pac = current_button.pressed;
 
-                if (this.direction == "a")
-                {
-                    this.x -= this.speed;
-                }
+                    current_button.update();
 
-                if (this.direction == "s")
-                {
-                    this.y += this.speed;
-                }
+                    bool cac = current_button.pressed;
 
-                if (this.direction == "d")
-                {
-                    this.x += this.speed;
+                    if (pac != cac)
+                    {
+                        action_changes = true;
+                    }
                 }
             }
-
-            if (this.selected == false)
+            else
             {
                 var rnd = new Random();
 
@@ -153,19 +123,38 @@ namespace floating_island
                 }
             }
 
-            //checking if player wants to somehow interact with hero
-            MouseState mouseState = Mouse.GetState();
+            if (this.action == "wa")
+            {
+                if (this.direction == "w")
+                {
+                    this.y -= this.speed;
+                }
 
-            //if it's just selected
-            if (mouseState.LeftButton == ButtonState.Released && this.oldState.LeftButton == ButtonState.Pressed && this.time_since_last_press >= 20)
+                if (this.direction == "a")
+                {
+                    this.x -= this.speed;
+                }
+
+                if (this.direction == "s")
+                {
+                    this.y += this.speed;
+                }
+
+                if (this.direction == "d")
+                {
+                    this.x += this.speed;
+                }
+            }
+            
+            //checking if was selected/unselected
+
+            if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
             {   
                 float tmpw = this.textures[this.img_phase].Width / 966f / 2f;
                 float tmph = this.textures[this.img_phase].Height / 686f / 2f;
 
-                if (my_island.mx >= this.x - tmpw && my_island.mx <= this.x + tmpw && my_island.my <= this.y && my_island.my >= this.y - tmph * 2)
+                if (!somethingSelected && my_island.mx >= this.x - tmpw && my_island.mx <= this.x + tmpw && my_island.my <= this.y && my_island.my >= this.y - tmph * 2)
                 {
-                    this.time_since_last_press = 0;
-
                     this.path = null;
 
                     this.action = "no";
@@ -180,8 +169,6 @@ namespace floating_island
                     }
                 }
             }
-
-            this.oldState = mouseState;
 
             //checking if coords were changed properly, otherwise rolling them back
             if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))

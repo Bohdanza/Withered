@@ -111,15 +111,30 @@ namespace floating_island
 
         public void draw(SpriteBatch spriteBatch)
         {
-            if (this.pressed)
+            if (this.type == 0)
             {
-                spriteBatch.Draw(this.pressed_texture, new Vector2(this.x, this.y), Color.White);
-            }
-            else
-            {
-                spriteBatch.Draw(this.normal_texture, new Vector2(this.x, this.y), Color.White);
+                if (this.oldState.LeftButton == ButtonState.Pressed && this.oldState.X >= this.x && this.oldState.Y >= this.y && this.oldState.X <= this.x + this.width && this.oldState.Y <= this.y + this.height)
+                {
+                    spriteBatch.Draw(this.pressed_texture, new Vector2(this.x, this.y), Color.White);
+                }
+                else
+                {
+                    spriteBatch.Draw(this.normal_texture, new Vector2(this.x, this.y), Color.White);
+                }
             }
 
+            if (this.type == 1)
+            {
+                if(this.pressed)
+                {
+                    spriteBatch.Draw(this.pressed_texture, new Vector2(this.x, this.y), Color.White);
+                }
+                else
+                {
+                    spriteBatch.Draw(this.normal_texture, new Vector2(this.x, this.y), Color.White);
+                }
+            }
+            
             if (this.text != null && this.font != null)
             {
                 Vector2 tmp_size = this.font.MeasureString(this.text);

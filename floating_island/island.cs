@@ -15,25 +15,59 @@ namespace floating_island
     {
         public float radius { get; private set; }
 
+        public MouseState currentState { get; private set; }
+        public MouseState oldState { get; private set; }
+
         public float mx { get; private set; }
         public float my { get; private set; }
 
         public int draw_x=0, draw_y=0;
+
+        public int timeSinceLastPress { get; private set; }
 
         private List<map_object> map_Objects = new List<map_object>();
         private List<plant> plant_samples = new List<plant>();
         List<item> item_samples = new List<item>();
 
         private Texture2D crust;
+        private Texture2D attentionDarkness, buildingMenuBackground;
 
-        public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, string path)
+        private button buildingMenuOpen, buildingMenuClose;
+
+        private bool buildingMenuClosed = true;
+        private int draw_l;
+
+        public int ticks = 0;
+        private List<building> buildingRecipeList;
+
+        public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
         {
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
 
-            this.crust = cm.Load<Texture2D>("island_crust");
+            this.buildingRecipeList = new List<building>();
 
-            if(Directory.Exists(path))
+            for(int i=0; i<1; i++)
+            {
+                this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i]));
+            }
+
+            this.draw_l = 1;
+
+            this.crust = cm.Load<Texture2D>("island_crust");
+            this.attentionDarkness = cm.Load<Texture2D>("attentionDarkness");
+
+            Texture2D tmptex = cm.Load<Texture2D>("w0hidebutton");
+
+            this.buildingMenuOpen = new button(0, 800 - (int)(tmptex.Width / 2), 876 - (int)(tmptex.Height * 1.1f), tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("w1hidebutton"));
+
+            tmptex = cm.Load<Texture2D>("s0hidebutton");
+
+            this.buildingMenuClose = new button(0, 800 - (int)(tmptex.Width / 2), 876 - (int)(tmptex.Height * 1.1f), tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("s1hidebutton"));
+            
+            this.buildingMenuBackground = cm.Load<Texture2D>("buildingbackground");
+
+            if (Directory.Exists(path))
             {
                 if(this.Load(path, cm))
                 {
@@ -41,7 +75,12 @@ namespace floating_island
                 }
             }
 
+            this.oldState = Mouse.GetState();
+            this.currentState = Mouse.GetState();
+
             this.generate(0, cm);
+
+            this.timeSinceLastPress = 0;
         }
 
         private void generate(int biome, ContentManager cm)
@@ -337,21 +376,105 @@ namespace floating_island
 
         public void update(ContentManager cm)
         {
-            //getting mouse cursor position and converting it into island coords
-            var mouseState = Mouse.GetState();
+            this.timeSinceLastPress++;
+            this.ticks++;
 
-            this.mx = (float)(mouseState.X - 316 - this.draw_x) / 966;
-            this.my = (float)(mouseState.Y - 146 - this.draw_y) / 696;
+            if(this.ticks>=1000000)
+            {
+                this.ticks = 0;
+            }
+
+            //getting mouse cursor position and converting it into island coords
+            this.currentState = Mouse.GetState();
+
+            this.mx = (float)(this.currentState.X - 316 - this.draw_x) / 966;
+            this.my = (float)(this.currentState.Y - 182 - this.draw_y) / 696;
+
+            bool somethingSelected = false;
+
+            //updating buttons that to open/close building menu
+            if (this.buildingMenuClosed)
+            {
+                this.buildingMenuOpen.update();
+
+                if (this.buildingMenuOpen.pressed)
+                {
+                    somethingSelected = true;
+
+                    this.buildingMenuClosed = false;
+                }
+            }
+            else
+            {
+                this.buildingMenuClose.update();
+
+                if (this.buildingMenuClose.pressed)
+                {
+                    somethingSelected = true;
+
+                    this.buildingMenuClosed = true;
+                }
+            }
+
+            //updating map objects
+            foreach (var currentObject in this.map_Objects)
+            {
+                if(currentObject.selected)
+                {
+                    somethingSelected = true;
+                }
+            }
 
             //updating all the objects
             for (int i=0; i<this.map_Objects.Count; i++)
             {
-                this.map_Objects[i].update(cm, this, i);
+                this.map_Objects[i].update(cm, this, i, somethingSelected);
+
+                if(this.map_Objects[i].selected)
+                {
+                    somethingSelected = true;
+                }
             }
+
+            if (this.currentState.LeftButton == ButtonState.Released && this.oldState.LeftButton == ButtonState.Pressed)
+            {
+                this.timeSinceLastPress = 0;
+            }
+
+            this.oldState = this.currentState;
 
             //We need to keep our object list sorted by y axis to overlay images properly when drawing
             //so we will sort them here in case if some objects were moved
             this.map_Objects.Sort((a, b) => (a.y).CompareTo(b.y));
+
+            //for building menu appear animation
+            if(this.buildingMenuClosed)
+            {
+                if (this.buildingMenuClose.y < 876 - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
+                {
+                    this.buildingMenuClose.y += 10;
+                    this.buildingMenuOpen.y += 10;
+                }
+            }
+            else
+            {
+                if(this.buildingMenuClose.y > 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuClose.normal_texture.Height*1.1f))
+                {
+                    this.buildingMenuClose.y -= 10;
+                    this.buildingMenuOpen.y -= 10;
+                }
+            }
+
+            //probably for island y moving
+           /* if (this.ticks % 15 == 0)
+            {
+                this.draw_y += this.draw_l;
+
+                if (this.draw_y < 0 || this.draw_y > 3)
+                {
+                    this.draw_l *= -1;
+                }
+            }*/
         }
 
         public void draw(SpriteBatch spriteBatch)
@@ -361,9 +484,34 @@ namespace floating_island
             foreach (var current_object in this.map_Objects)
             {
                 int draw_x = (int)(316 + this.draw_x + current_object.x * 966);
-                int draw_y = (int)(146 + this.draw_y + current_object.y * 686);
+                int draw_y = (int)(183 + this.draw_y + current_object.y * 686);
 
                 current_object.draw(spriteBatch, draw_x, draw_y);
+            }
+
+            spriteBatch.Draw(attentionDarkness, new Vector2(0, 0), Color.White);
+
+            if (this.buildingMenuClosed)
+            {
+                this.buildingMenuOpen.draw(spriteBatch);
+
+                spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f)), Color.White);
+
+                for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                {
+                    this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f + 24));
+                }
+            }
+            else
+            {
+                this.buildingMenuClose.draw(spriteBatch);
+
+                spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f)), Color.White);
+
+                for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                {
+                    this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f + 24));
+                }
             }
         }
         

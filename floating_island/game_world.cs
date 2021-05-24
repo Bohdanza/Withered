@@ -17,10 +17,11 @@ namespace floating_island
         island mainIsland; 
         List<plant> sample_plant_list = new List<plant>();
         List<item> sample_item_list = new List<item>();
+        List<building> sampleBuildings = new List<building>();
 
         public game_world(ContentManager cm, string path)
         {
-            //COMENT_A : TODO
+            //TODO:
             //later I must add one more shit here
             //which would control if the whole world must be [re]generated
             
@@ -41,7 +42,12 @@ namespace floating_island
                 this.sample_item_list.Add(new item(cm, 0, 0, i, true, 0));
             }
 
-            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.path + @"islands\0");
+            for (int i = 0; i < 1; i++)
+            {
+                this.sampleBuildings.Add(new building(cm, 0f, 0f, i)); 
+            }
+
+            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.sampleBuildings, this.path + @"islands\0");
         }
 
         public void update(ContentManager cm)
