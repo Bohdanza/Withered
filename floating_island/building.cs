@@ -294,5 +294,14 @@ namespace floating_island
 
             return tmp_list;
         }
+
+        //later i'll add defence against stupid here 
+        public override bool changeCoords(Vector2 newCoords)
+        {
+            this.x = newCoords.X;
+            this.y = newCoords.Y;
+
+            return true;
+        }
     }
 }

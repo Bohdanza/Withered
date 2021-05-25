@@ -40,5 +40,14 @@ namespace floating_island
         {
             return new List<string>();
         }
+
+        //later i'll add defence against stupid here 
+        public virtual bool changeCoords(Vector2 newCoords)
+        {
+            this.x = newCoords.X;
+            this.y = newCoords.Y;
+
+            return true;
+        }
     }
 }

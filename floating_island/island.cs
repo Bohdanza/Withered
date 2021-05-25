@@ -27,7 +27,8 @@ namespace floating_island
 
         private List<map_object> map_Objects = new List<map_object>();
         private List<plant> plant_samples = new List<plant>();
-        List<item> item_samples = new List<item>();
+        private List<item> item_samples = new List<item>();
+        private List<building> buildingSamples = new List<building>();
 
         private Texture2D crust;
         private Texture2D attentionDarkness, buildingMenuBackground;
@@ -37,6 +38,8 @@ namespace floating_island
         private bool buildingMenuClosed = true;
         private int draw_l;
 
+        private building selectedBuilding = null;
+
         public int ticks = 0;
         private List<building> buildingRecipeList;
 
@@ -44,6 +47,7 @@ namespace floating_island
         {
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
+            this.buildingSamples = buildingSamples;
 
             this.buildingRecipeList = new List<building>();
 
@@ -368,6 +372,26 @@ namespace floating_island
 
                         i += 4;
                     }
+                    else if (tmp_str_list[i] == "#building")
+                    {
+                        int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                        float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                        float tmp_y = float.Parse(tmp_str_list[i + 3]);
+
+                        int tmpn = Int32.Parse(tmp_str_list[i + 4]), z=i+4;
+
+                        List<item> tmpItemList = new List<item>();
+
+                        for(i=z+1; i<z+tmpn*2; i+=2)
+                        {
+                            int tmp_type1 = Int32.Parse(tmp_str_list[i]);
+                            int number = Int32.Parse(tmp_str_list[i+1]);
+
+                            tmpItemList.Add(new item(cm, 0f, 0f, tmp_type1, false, number, this.item_samples[tmp_type1]));
+                        }
+
+                        this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList));
+                    }
                 }
             }
 
@@ -392,31 +416,89 @@ namespace floating_island
 
             bool somethingSelected = false;
 
+            if(this.selectedBuilding!=null)
+            {
+                somethingSelected = true;
+            }
+
             //updating buttons that to open/close building menu
-            if (this.buildingMenuClosed)
+            if (this.selectedBuilding == null)
             {
-                this.buildingMenuOpen.update();
-
-                if (this.buildingMenuOpen.pressed)
+                if (this.buildingMenuClosed)
                 {
-                    somethingSelected = true;
+                    if (this.currentState.LeftButton == ButtonState.Pressed)
+                    {
+                        bool f = true;
 
-                    this.buildingMenuClosed = false;
+                        for (int i = 0; i < this.buildingRecipeList.Count && f; i++)
+                        {
+                            var tmprect = new Rectangle(i * 150 + 24, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f + 24), 134, 134);
+
+                            if (tmprect.Contains(new Vector2(this.currentState.X, this.currentState.Y)))
+                            {
+                                this.selectedBuilding = new building(cm, mx, my, this.buildingRecipeList[i].type);
+
+                                f = false;
+                            }
+                        }
+                    }
+
+                    this.buildingMenuOpen.update();
+
+                    if (this.buildingMenuOpen.pressed)
+                    {
+                        somethingSelected = true;
+
+                        this.buildingMenuClosed = false;
+                    }
+                }
+                else
+                {
+                    if (this.currentState.LeftButton == ButtonState.Pressed)
+                    {
+                        bool f = true;
+
+                        for (int i = 0; i < this.buildingRecipeList.Count && f; i++)
+                        {
+                            var tmprect = new Rectangle(i * 150 + 24, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f + 24), 134, 134);
+
+                            if (tmprect.Contains(new Vector2(this.currentState.X, this.currentState.Y)))
+                            {
+                                this.selectedBuilding = new building(cm, mx, my, this.buildingRecipeList[i].type);
+
+                                f = false;
+                            }
+                        }
+                    }
+
+                    this.buildingMenuClose.update();
+
+                    if (this.buildingMenuClose.pressed)
+                    {
+                        somethingSelected = true;
+
+                        this.buildingMenuClosed = true;
+                    }
                 }
             }
-            else
+
+            if (this.selectedBuilding != null)
             {
-                this.buildingMenuClose.update();
+                this.selectedBuilding.update(cm, this, -1, somethingSelected);
+                this.selectedBuilding.changeCoords(new Vector2(this.mx, this.my));
 
-                if (this.buildingMenuClose.pressed)
+                if(this.currentState.LeftButton == ButtonState.Pressed)
                 {
-                    somethingSelected = true;
+                    if(this.add_object(this.selectedBuilding))
+                    {
+                        this.selectedBuilding = null;
 
-                    this.buildingMenuClosed = true;
+                        somethingSelected = true;
+                    }
                 }
             }
 
-            //updating map objects
+            //checking if map objects were selected
             foreach (var currentObject in this.map_Objects)
             {
                 if(currentObject.selected)
@@ -435,7 +517,7 @@ namespace floating_island
                     somethingSelected = true;
                 }
             }
-
+    
             if (this.currentState.LeftButton == ButtonState.Released && this.oldState.LeftButton == ButtonState.Pressed)
             {
                 this.timeSinceLastPress = 0;
@@ -465,7 +547,8 @@ namespace floating_island
                 }
             }
 
-            //probably for island y moving
+            //can be used for island y moving
+            //still unfinished
            /* if (this.ticks % 15 == 0)
             {
                 this.draw_y += this.draw_l;
@@ -481,6 +564,7 @@ namespace floating_island
         {
             spriteBatch.Draw(crust, new Vector2(this.draw_x, this.draw_y), Color.White);
 
+            //drawing map objects
             foreach (var current_object in this.map_Objects)
             {
                 int draw_x = (int)(316 + this.draw_x + current_object.x * 966);
@@ -489,28 +573,38 @@ namespace floating_island
                 current_object.draw(spriteBatch, draw_x, draw_y);
             }
 
+            if (this.selectedBuilding != null)
+            {
+                this.selectedBuilding.draw(spriteBatch, (int)(316 + this.draw_x + this.selectedBuilding.x * 966), (int)(183 + this.draw_y + this.selectedBuilding.y * 686));
+            }
+
+            //drawing some effects
             spriteBatch.Draw(attentionDarkness, new Vector2(0, 0), Color.White);
 
-            if (this.buildingMenuClosed)
+            //drawing buildings on building panel
+            if (this.selectedBuilding == null)
             {
-                this.buildingMenuOpen.draw(spriteBatch);
-
-                spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f)), Color.White);
-
-                for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                if (this.buildingMenuClosed)
                 {
-                    this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f + 24));
+                    this.buildingMenuOpen.draw(spriteBatch);
+
+                    spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f)), Color.White);
+
+                    for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                    {
+                        this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuOpen.y + (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f + 24));
+                    }
                 }
-            }
-            else
-            {
-                this.buildingMenuClose.draw(spriteBatch);
-
-                spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f)), Color.White);
-
-                for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                else
                 {
-                    this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f + 24));
+                    this.buildingMenuClose.draw(spriteBatch);
+
+                    spriteBatch.Draw(this.buildingMenuBackground, new Vector2(0, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f)), Color.White);
+
+                    for (int i = 0; i < this.buildingRecipeList.Count; i++)
+                    {
+                        this.buildingRecipeList[i].drawAsRecipe(spriteBatch, i * 150 + 24, this.buildingMenuClose.y + (int)(this.buildingMenuClose.normal_texture.Height * 1.1f + 24));
+                    }
                 }
             }
         }
