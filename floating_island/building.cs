@@ -213,11 +213,11 @@ namespace floating_island
                 this.recipeTextures = new List<Texture2D>();
                 this.recipeImgPhase = 0;
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "building" + this.imgPhase.ToString() + "recipe" + ".xnb"))
+                while (File.Exists(@"Content\" + this.type.ToString() + "building" + this.recipeImgPhase.ToString() + "recipe" + ".xnb"))
                 {
-                    this.recipeTextures.Add(cm.Load<Texture2D>(this.type.ToString() + "building" + this.imgPhase.ToString() + "recipe"));
+                    this.recipeTextures.Add(cm.Load<Texture2D>(this.type.ToString() + "building" + this.recipeImgPhase.ToString() + "recipe"));
 
-                    this.imgPhase++;
+                    this.recipeImgPhase++;
                 }
 
                 this.recipeImgPhase = 0;
@@ -226,7 +226,7 @@ namespace floating_island
 
         public override void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
         {
-            this.update_texture(cm);
+            this.update_texture(cm, false);
         }
 
         public override void draw(SpriteBatch spriteBatch, int x, int y)
@@ -261,10 +261,14 @@ namespace floating_island
             }
         }
 
-        public void addItem(item itemToAdd)
+        public void addItem(item itemToAdd, ContentManager cm)
         {
-            for(int i=0; i<this.itemsToComplete.Count; i++)
+            int l = 1;
+
+            for(int i=0; i<this.itemsToComplete.Count; i+=l)
             {
+                l = 1;
+
                 if(this.itemsToComplete[i].type==itemToAdd.type)
                 {
                     int tmpc = this.itemsToComplete[i].number;
@@ -273,7 +277,16 @@ namespace floating_island
 
                     itemToAdd.number = Math.Max(0, itemToAdd.number - this.itemsToComplete[i].number);
                 }
+
+                if(this.itemsToComplete[i].number<=0)
+                {
+                    this.itemsToComplete.RemoveAt(i);
+
+                    l = 0;
+                }
             }
+
+            this.update_texture(cm, true);
         }
 
         public override List<string> save_list()
@@ -293,6 +306,19 @@ namespace floating_island
             }
 
             return tmp_list;
+        }
+
+        public bool ItemCanBeAdded(item itemToAdd)
+        {
+            foreach(var currentItem in this.itemsToComplete)
+            {
+                if(currentItem.type == itemToAdd.type && currentItem.number>0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         //later i'll add defence against stupid here 

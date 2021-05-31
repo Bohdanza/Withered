@@ -18,7 +18,7 @@ namespace floating_island
         public override List<int> what_to_do_with { get; protected set; } = new List<int>();
 
         public float speed { get; private set; }
-        public List<Vector2> path { get; private set; } = new List<Vector2>();
+        public string path { get; private set; } = "";
         public override Vector2 hitbox_left { get; protected set; }
         public override Vector2 hitbox_right { get; protected set; }
 
@@ -33,10 +33,13 @@ namespace floating_island
 
         public List<int> action_types { get; protected set; } = new List<int>();
         public List<button> action_buttons { get; protected set; } = new List<button>();
+        public item itemInHand { get; protected set; }
 
         public hero(ContentManager cm, int type, float x, float y)
         {
-            this.speed = 0.001f;
+            this.itemInHand = null;
+
+            this.speed = 0.005f;
             this.type = type;
 
             this.x = x;
@@ -123,7 +126,54 @@ namespace floating_island
                 }
             }
 
-            if (this.action == "wa")
+            int l = 1;
+
+            //checking if shit in hand must not EXIST AT ALL
+            if (this.itemInHand!=null && this.itemInHand.number <= 0)
+            {
+                this.itemInHand = null;
+            }
+
+            //checking map objects
+            for (int i=0; i<my_island.map_Objects.Count; i+=l)
+            {
+                l = 1;
+
+                if (my_island.map_Objects[i].save_list()[0] == "#item" && my_island.get_dist(my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.x, this.y) <= this.speed*500 && this.itemInHand == null)
+                {
+                    this.itemInHand = (item)my_island.map_Objects[i];
+
+                    my_island.delete_object(i);
+                    l = 0;
+                }
+                else if(my_island.map_Objects[i].save_list()[0]=="#building")
+                {
+                    if (this.itemInHand != null && ((building)my_island.map_Objects[i]).ItemCanBeAdded(itemInHand))
+                    {
+                        if (my_island.map_Objects[i].contains_point(new Vector2(this.x + this.speed, this.y)) || my_island.map_Objects[i].contains_point(new Vector2(this.x - this.speed, this.y)) || my_island.map_Objects[i].contains_point(new Vector2(this.x, this.y + this.speed)) || my_island.map_Objects[i].contains_point(new Vector2(this.x, this.y - this.speed)))
+                        {
+                            ((building)my_island.map_Objects[i]).addItem(this.itemInHand, cm);
+                        }
+                        else if (this.path == null || this.path.Length <= 0)
+                        {
+                            this.path = this.find_path(this.x, this.y, my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.speed, my_island, my_index, i);
+                        }
+                    }
+                }
+            }
+
+            //checking if path is unempty
+            if (this.path != null && this.path.Length > 0)
+            {
+                this.action = "wa";
+
+                this.direction = this.path[0].ToString();
+
+                this.path = this.path.Remove(0, 1);
+            }
+
+            //walking update
+            if (this.action == "wa" && !this.selected)
             {
                 if (this.direction == "w")
                 {
@@ -145,9 +195,8 @@ namespace floating_island
                     this.x += this.speed;
                 }
             }
-            
-            //checking if was selected/unselected
 
+            //checking if was selected/unselected
             if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
             {   
                 float tmpw = this.textures[this.img_phase].Width / 966f / 2f;
@@ -175,6 +224,30 @@ namespace floating_island
             {
                 this.x = px;
                 this.y = py;
+
+                var rnd = new Random();
+
+                int rndr1 = rnd.Next(0, 4);
+
+                if (rndr1 == 0)
+                {
+                    this.direction = "w";
+                }
+
+                if (rndr1 == 1)
+                {
+                    this.direction = "a";
+                }
+
+                if (rndr1 == 2)
+                {
+                    this.direction = "s";
+                }
+
+                if (rndr1 == 3)
+                {
+                    this.direction = "d";
+                }
             }
 
             //updating texture
@@ -247,148 +320,116 @@ namespace floating_island
                     current_button.draw(spriteBatch);
                 }
             }
+
+            if (this.itemInHand != null)
+            {
+                this.itemInHand.draw(spriteBatch, (int)(x - this.textures[this.img_phase].Width / 2), (int)(y - this.textures[this.img_phase].Height * 1.1f));
+            }
         }
 
-        private List<Vector2> find_path(float x, float y, float dx, float dy, float speed, island my_island, int index_to_ignore)
+        private string find_path(float x, float y, float dx, float dy, float speed, island my_island, int index_to_ignore, int indexToIgnore2)
         {
+            List<Tuple<Vector2, string>> current = new List<Tuple<Vector2, string>>();
+            List<List<int>> mainList = new List<List<int>>();
+            List<int> ignored = new List<int>();
+
+            ignored.Add(indexToIgnore2);
+            ignored.Add(index_to_ignore);
+
+            for (float i = (float)x % speed; i < 1f; i += speed)
+            {
+                List<int> tmpList = new List<int>();
+
+                for (float j = (float)y % speed; j < 1f; j += speed)
+                {
+                    if(my_island.is_point_free(new Vector2(i, j), ignored))
+                    {
+                        tmpList.Add(1);
+                    }
+                    else
+                    {
+                        tmpList.Add(0);
+                    }
+                }
+
+                mainList.Add(tmpList);
+            }
+
+            current.Add(new Tuple<Vector2, string>(new Vector2((int)(x / speed), (int)(y / speed)), ""));
+
+            dx = (int)(dx / speed);
+            dy = (int)(dy / speed);
+
             bool end = false;
-            int end_ind = 0, operations=0;
 
-            List<Tuple<Vector2, Vector2>> discovered = new List<Tuple<Vector2, Vector2>>(), to_check = new List<Tuple<Vector2, Vector2>>(), current = new List<Tuple<Vector2, Vector2>>();
-
-            to_check.Add(Tuple.Create(new Vector2(x, y), new Vector2(x, y)));
-
-            while (!end)
+            while (current.Count > 0 && !end)
             {
-                operations++;
+                List<Tuple<Vector2, string>> queue = new List<Tuple<Vector2, string>>();
 
-                if(operations>=5000)
+                foreach(var currentTuple in current)
                 {
-                    return null;
-                }
+                    mainList[(int)(currentTuple.Item1.X)][(int)(currentTuple.Item1.Y)] = 0;
 
-                discovered.AddRange(to_check);
+                    Tuple<Vector2, string> t1, t2, t3, t4;
+
+                    t1 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X + 1, currentTuple.Item1.Y), currentTuple.Item2 + "d");
+                    t2 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X - 1, currentTuple.Item1.Y), currentTuple.Item2 + "a");
+                    t3 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y + 1), currentTuple.Item2 + "s");
+                    t4 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y - 1), currentTuple.Item2 + "w");
+
+                    if (t1.Item1.X>=0 && t1.Item1.X<mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t1.Item1))
+                    {
+                        queue.Add(t1);
+
+                     //   File.AppendAllText("log.txt", t1.Item1.X.ToString() + " " + t1.Item1.Y.ToString() + "\n");
+
+                        if (Math.Abs(t1.Item1.Y - dy) < 1 && Math.Abs(t1.Item1.X - dx) < 1)
+                        {
+                            return t1.Item2;
+                        }
+                    }
+
+                    if (t2.Item1.X >= 0 && t2.Item1.X < mainList.Count && t2.Item1.Y >= 0 && t2.Item1.Y < mainList[(int)(t2.Item1.X)].Count && mainList[(int)t2.Item1.X][(int)t2.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t2.Item1))
+                    {
+                        queue.Add(t2);
+
+                     //   File.AppendAllText("log.txt", t2.Item1.X.ToString() + " " + t2.Item1.Y.ToString() + "\n");
+
+                        if (Math.Abs(t2.Item1.Y - dy) < 1 && Math.Abs(t2.Item1.X - dx) < 1)
+                        {
+                            return t2.Item2;
+                        }
+                    }
+
+                    if (t3.Item1.X >= 0 && t3.Item1.X < mainList.Count && t3.Item1.Y >= 0 && t3.Item1.Y < mainList[(int)(t3.Item1.X)].Count && mainList[(int)t3.Item1.X][(int)t3.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t3.Item1))
+                    {
+                        queue.Add(t3);
+
+                   //     File.AppendAllText("log.txt", t3.Item1.X.ToString() + " " + t3.Item1.Y.ToString() + "\n");
+
+                        if (Math.Abs(t3.Item1.Y - dy) < 1 && Math.Abs(t3.Item1.X - dx) < 1)
+                        {
+                            return t3.Item2;
+                        }
+                    }
+
+                    if (t4.Item1.X >= 0 && t4.Item1.X < mainList.Count && t4.Item1.Y >= 0 && t4.Item1.Y < mainList[(int)(t4.Item1.X)].Count && mainList[(int)t4.Item1.X][(int)t4.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t4.Item1))
+                    {
+                        queue.Add(t4);
+
+                    //    File.AppendAllText("log.txt", t4.Item1.X.ToString() + " " + t4.Item1.Y.ToString() + "\n");
+
+                        if (Math.Abs(t4.Item1.Y - dy) < 1 && Math.Abs(t4.Item1.X - dx) < 1)
+                        {
+                            return t4.Item2;
+                        }
+                    }
+                }
                 
-                if (to_check.Count == 0)
-                {
-                    return null;
-                }
-
-                foreach (var current_point in to_check)
-                {
-                    Vector2 v1, v2, v3, v4;
-                    bool b1 = true, b2 = true, b3 = true, b4 = true;
-
-                    v1 = new Vector2(current_point.Item1.X + speed, current_point.Item1.Y);
-                    v2 = new Vector2(current_point.Item1.X - speed, current_point.Item1.Y);
-                    v3 = new Vector2(current_point.Item1.X, current_point.Item1.Y + speed);
-                    v4 = new Vector2(current_point.Item1.X, current_point.Item1.Y - speed);
-
-                    foreach(var current_item in discovered)
-                    {
-                        var tmpv = current_item.Item1;
-
-                        if (tmpv.X == v1.X && tmpv.Y == v1.Y)
-                        {
-                            b1 = false;
-                        }
-
-                        if (tmpv.X == v2.X && tmpv.Y == v2.Y)
-                        {
-                            b2 = false;
-                        }
-
-                        if (tmpv.X == v3.X && tmpv.Y == v3.Y)
-                        {
-                            b3 = false;
-                        }
-                        
-                        if (tmpv.X == v4.X && tmpv.Y == v4.Y)
-                        {
-                            b4 = false;
-                        }
-                    }
-
-                    if (!my_island.is_point_free(v1, index_to_ignore))
-                    {
-                        b1 = false;
-                    }
-
-                    if (!my_island.is_point_free(v2, index_to_ignore))
-                    {
-                        b2 = false;
-                    }
-
-                    if (!my_island.is_point_free(v3, index_to_ignore))
-                    {
-                        b3 = false;
-                    }
-
-                    if (!my_island.is_point_free(v4, index_to_ignore))
-                    {
-                        b4 = false;
-                    }
-
-                    if (b1)
-                    {
-                        current.Add(Tuple.Create(v1, current_point.Item1));
-                    }
-
-                    if (b2)
-                    {
-                        current.Add(Tuple.Create(v2, current_point.Item1));
-                    }
-
-                    if (b3)
-                    {
-                        current.Add(Tuple.Create(v3, current_point.Item1));
-                    }
-
-                    if (b4)
-                    {
-                        current.Add(Tuple.Create(v4, current_point.Item1));
-                    }
-                }
-
-                to_check = new List<Tuple<Vector2, Vector2>>();
-
-                for (int i = 0; i < discovered.Count; i++)
-                {
-                    if (my_island.get_dist(dx, dy, discovered[i].Item1.X, discovered[i].Item1.Y) < speed)
-                    {
-                        end_ind = i;
-
-                        end = true;
-                    }
-                }
-
-                to_check.AddRange(current);
+                current = queue;
             }
 
-            List<Vector2> ans = new List<Vector2>();
-
-            while (discovered[end_ind].Item1.X != x || discovered[end_ind].Item1.Y != y)
-            {
-                var current_point = discovered[end_ind].Item1;
-                var prev_point = discovered[end_ind].Item2;
-
-                ans.Add(new Vector2(current_point.X - prev_point.X, current_point.Y - prev_point.Y));
-
-                discovered.RemoveAt(end_ind);
-
-                bool flag = true;
-
-                for(int i=0; i<discovered.Count&&flag; i++)
-                {
-                    if (discovered[i].Item1.X == prev_point.X && discovered[i].Item1.Y == prev_point.Y)
-                    {
-                        end_ind = i;
-                        flag = false;
-                    }
-                }
-            }
-
-            return ans;
+            return null;
         }
 
         public override List<string> save_list()

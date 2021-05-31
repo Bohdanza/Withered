@@ -25,7 +25,7 @@ namespace floating_island
 
         public int timeSinceLastPress { get; private set; }
 
-        private List<map_object> map_Objects = new List<map_object>();
+        public List<map_object> map_Objects { get; private set; } = new List<map_object>();
         private List<plant> plant_samples = new List<plant>();
         private List<item> item_samples = new List<item>();
         private List<building> buildingSamples = new List<building>();
@@ -508,14 +508,24 @@ namespace floating_island
             }
 
             //updating all the objects
-            for (int i=0; i<this.map_Objects.Count; i++)
+            int l = 1, pc=this.map_Objects.Count;
+
+            for (int i=0; i<this.map_Objects.Count; i+=l)
             {
+                l = 1;
+
                 this.map_Objects[i].update(cm, this, i, somethingSelected);
 
-                if(this.map_Objects[i].selected)
+                if(this.map_Objects.Count<pc)
+                {
+                    l = 0;
+                }
+                else if(this.map_Objects[i].selected)
                 {
                     somethingSelected = true;
                 }
+
+                pc = this.map_Objects.Count;
             }
     
             if (this.currentState.LeftButton == ButtonState.Released && this.oldState.LeftButton == ButtonState.Pressed)
@@ -609,7 +619,7 @@ namespace floating_island
             }
         }
         
-        private bool add_object(map_object object_to_add)
+        public bool add_object(map_object object_to_add)
         {
             //we need to check if some of our hitbox points cant be where they want to be
             //cos U CAN'T JUST DO WHAT YOU WANT
@@ -627,6 +637,18 @@ namespace floating_island
             this.map_Objects.Add(object_to_add);
 
             return true;
+        }
+
+        public bool delete_object(int indexToDeleteAt)
+        {
+            if(indexToDeleteAt>=0&&indexToDeleteAt<this.map_Objects.Count)
+            {
+                map_Objects.RemoveAt(indexToDeleteAt);
+
+                return true;
+            }
+
+            return false;
         }
 
         public float get_dist(float x, float y, float x1, float y1)
