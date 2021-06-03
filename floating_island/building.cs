@@ -275,7 +275,7 @@ namespace floating_island
 
                     this.itemsToComplete[i].number = Math.Max(0, this.itemsToComplete[i].number - itemToAdd.number);
 
-                    itemToAdd.number = Math.Max(0, itemToAdd.number - this.itemsToComplete[i].number);
+                    itemToAdd.number = Math.Max(0, itemToAdd.number + this.itemsToComplete[i].number - tmpc);
                 }
 
                 if(this.itemsToComplete[i].number<=0)

@@ -43,8 +43,12 @@ namespace floating_island
         public int ticks = 0;
         private List<building> buildingRecipeList;
 
+        private ResearchPoint testpoint;
+
         public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
         {
+            this.testpoint = new ResearchPoint(cm, 0, 113, null);
+
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
@@ -89,46 +93,7 @@ namespace floating_island
 
         private void generate(int biome, ContentManager cm)
         {
-            /*List<string> subdir = Directory.GetDirectories(@"info\global\recipes\").ToList();
-            
-            int it = 0;
-
-            foreach(var current_dir in subdir)
-            {
-                string c = current_dir;
-                
-                if(c[c.Length-1]!='\\')
-                {
-                    c += '\\';
-                }
-
-                if (File.Exists(c + "requirements"))
-                {
-                    if(File.ReadAllText(c + "requirements")[0]=='0')
-                    {
-                        tmprecipes.Add(new recipe(cm, it, item_samples));
-                    }
-                }
-
-                it++;
-            }*/
-
             var rnd = new Random();
-
-            //adding_hero
-
-            int c = 0;
-
-            while (c < 3)
-            {
-                float tmpx = (float)rnd.NextDouble();
-                float tmpy = (float)rnd.NextDouble();
-                
-                if (this.add_object(new hero(cm, 0, tmpx, tmpy)))
-                {
-                    c++;
-                }
-            }
 
             int tmp_c = rnd.Next(0, 100);
 
@@ -273,6 +238,20 @@ namespace floating_island
                     }
                 }
             }
+
+            //adding heroes
+            int c = 0;
+
+            while (c < 3)
+            {
+                float tmpx = (float)rnd.NextDouble();
+                float tmpy = (float)rnd.NextDouble();
+
+                if (this.add_object(new hero(cm, 0, tmpx, tmpy, null)))
+                {
+                    c++;
+                }
+            }
         }
 
         public void save(string path, ContentManager cm)
@@ -368,7 +347,28 @@ namespace floating_island
                         float tmp_y = float.Parse(tmp_str_list[i + 2]);
                         int tmp_type = Int32.Parse(tmp_str_list[i + 3]);
 
-                        this.add_object(new hero(cm, tmp_type, tmp_x, tmp_y));
+                        item tmpitem;
+
+                        if (tmp_str_list[i + 4].Trim('\r') == "null" || tmp_str_list[i + 4].Trim('\n') == "null")
+                        {
+                            tmpitem = null;
+
+                            i++;
+                        }
+                        else
+                        {
+                            int tmp_type1 = Int32.Parse(tmp_str_list[i + 5]);
+                            float tmp_x1 = float.Parse(tmp_str_list[i + 6]);
+                            float tmp_y1 = float.Parse(tmp_str_list[i + 7]);
+                            bool tmp_bool1 = bool.Parse(tmp_str_list[i + 8]);
+                            int amount1 = Int32.Parse(tmp_str_list[i + 9]);
+
+                            tmpitem = new item(cm, tmp_x1, tmp_y1, tmp_type1, tmp_bool1, amount1, item_samples[tmp_type1]);
+
+                            i += 6;
+                        }
+
+                        this.add_object(new hero(cm, tmp_type, tmp_x, tmp_y, tmpitem));
 
                         i += 4;
                     }
@@ -617,6 +617,8 @@ namespace floating_island
                     }
                 }
             }
+
+            this.testpoint.draw(spriteBatch, 1370, 15);
         }
         
         public bool add_object(map_object object_to_add)

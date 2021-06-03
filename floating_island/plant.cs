@@ -109,7 +109,7 @@ namespace floating_island
         {
             bool action_changes = false;
 
-            if (this.selected)
+           /* if (this.selected)
             {
                 foreach (var current_button in this.action_buttons)
                 {
@@ -124,9 +124,9 @@ namespace floating_island
                         action_changes = true;
                     }
                 }
-            }
+            }*/
 
-            if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
+            /*if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
             {
                 float tmpw = this.textures[this.img_phase].Width / 966f / 2f;
                 float tmph = this.textures[this.img_phase].Height / 686f / 2f;
@@ -142,7 +142,7 @@ namespace floating_island
                         this.selected = false;
                     }
                 }
-            }
+            }*/
 
             this.update_texture(cm);
         }

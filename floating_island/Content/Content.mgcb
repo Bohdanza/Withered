@@ -4417,6 +4417,18 @@
 /processorParam:TextureFormat=Color
 /build:0plant0no0.png
 
+#begin 0research_point.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:0research_point.png
+
 #begin 1actbtn0.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -4608,6 +4620,32 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:island_crust.png
+
+#begin pointsBackground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:pointsBackground.png
+
+#begin pointsFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:pointsFont.spritefont
+
+#begin pointsFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:pointsFont.spritefont
 
 #begin s0hidebutton.png
 /importer:TextureImporter

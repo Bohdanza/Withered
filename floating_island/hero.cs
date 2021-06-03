@@ -35,9 +35,9 @@ namespace floating_island
         public List<button> action_buttons { get; protected set; } = new List<button>();
         public item itemInHand { get; protected set; }
 
-        public hero(ContentManager cm, int type, float x, float y)
+        public hero(ContentManager cm, int type, float x, float y, item handItem)
         {
-            this.itemInHand = null;
+            this.itemInHand = handItem;
 
             this.speed = 0.005f;
             this.type = type;
@@ -134,17 +134,29 @@ namespace floating_island
                 this.itemInHand = null;
             }
 
+            //We need this list, just trust me
+            ///I'm just to lazy to write why
+            List<item> discoveredItems = new List<item>();
+            List<item> neededItems = new List<item>();
+
             //checking map objects
             for (int i=0; i<my_island.map_Objects.Count; i+=l)
             {
                 l = 1;
 
-                if (my_island.map_Objects[i].save_list()[0] == "#item" && my_island.get_dist(my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.x, this.y) <= this.speed*500 && this.itemInHand == null)
+                if (my_island.map_Objects[i].save_list()[0] == "#item")
                 {
-                    this.itemInHand = (item)my_island.map_Objects[i];
+                    if (my_island.get_dist(my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.x, this.y) <= this.speed * 3f && this.itemInHand == null)
+                    {
+                        this.itemInHand = (item)my_island.map_Objects[i];
 
-                    my_island.delete_object(i);
-                    l = 0;
+                        my_island.delete_object(i);
+                        l = 0;
+                    }
+                    else
+                    {
+                        discoveredItems.Add((item)my_island.map_Objects[i]);                       
+                    }
                 }
                 else if(my_island.map_Objects[i].save_list()[0]=="#building")
                 {
@@ -157,6 +169,30 @@ namespace floating_island
                         else if (this.path == null || this.path.Length <= 0)
                         {
                             this.path = this.find_path(this.x, this.y, my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.speed, my_island, my_index, i);
+                        }
+                    }
+
+                    neededItems.AddRange(((building)my_island.map_Objects[i]).itemsToComplete);
+                }
+            }
+
+            //for items
+            if (this.itemInHand == null && (this.path == null || this.path == ""))
+            {
+                bool flag = true;
+
+                for (int i = 0; i < neededItems.Count && flag; i++)
+                {
+                    foreach(var currentItem in discoveredItems)
+                    {
+                        if(currentItem.type==neededItems[i].type)
+                        {
+                            this.path = this.find_path(this.x, this.y, currentItem.x, currentItem.y, this.speed, my_island, my_index, -1);
+                            
+                            if(this.path!=null)
+                            {
+                                flag = false;
+                            }
                         }
                     }
                 }
@@ -224,30 +260,6 @@ namespace floating_island
             {
                 this.x = px;
                 this.y = py;
-
-                var rnd = new Random();
-
-                int rndr1 = rnd.Next(0, 4);
-
-                if (rndr1 == 0)
-                {
-                    this.direction = "w";
-                }
-
-                if (rndr1 == 1)
-                {
-                    this.direction = "a";
-                }
-
-                if (rndr1 == 2)
-                {
-                    this.direction = "s";
-                }
-
-                if (rndr1 == 3)
-                {
-                    this.direction = "d";
-                }
             }
 
             //updating texture
@@ -287,7 +299,7 @@ namespace floating_island
                 }
             }
         }
-
+        
         public override void draw(SpriteBatch spriteBatch, int x, int y)
         {
             int sumx = 0;
@@ -327,6 +339,7 @@ namespace floating_island
             }
         }
 
+        //!!! TO SLOW, MUST BE CHANGED !!!
         private string find_path(float x, float y, float dx, float dy, float speed, island my_island, int index_to_ignore, int indexToIgnore2)
         {
             List<Tuple<Vector2, string>> current = new List<Tuple<Vector2, string>>();
@@ -342,7 +355,7 @@ namespace floating_island
 
                 for (float j = (float)y % speed; j < 1f; j += speed)
                 {
-                    if(my_island.is_point_free(new Vector2(i, j), ignored))
+                    if (my_island.is_point_free(new Vector2(i, j), ignored))
                     {
                         tmpList.Add(1);
                     }
@@ -366,7 +379,7 @@ namespace floating_island
             {
                 List<Tuple<Vector2, string>> queue = new List<Tuple<Vector2, string>>();
 
-                foreach(var currentTuple in current)
+                foreach (var currentTuple in current)
                 {
                     mainList[(int)(currentTuple.Item1.X)][(int)(currentTuple.Item1.Y)] = 0;
 
@@ -377,11 +390,11 @@ namespace floating_island
                     t3 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y + 1), currentTuple.Item2 + "s");
                     t4 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y - 1), currentTuple.Item2 + "w");
 
-                    if (t1.Item1.X>=0 && t1.Item1.X<mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t1.Item1))
+                    if (t1.Item1.X >= 0 && t1.Item1.X < mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t1.Item1))
                     {
                         queue.Add(t1);
 
-                     //   File.AppendAllText("log.txt", t1.Item1.X.ToString() + " " + t1.Item1.Y.ToString() + "\n");
+                        //   File.AppendAllText("log.txt", t1.Item1.X.ToString() + " " + t1.Item1.Y.ToString() + "\n");
 
                         if (Math.Abs(t1.Item1.Y - dy) < 1 && Math.Abs(t1.Item1.X - dx) < 1)
                         {
@@ -393,7 +406,7 @@ namespace floating_island
                     {
                         queue.Add(t2);
 
-                     //   File.AppendAllText("log.txt", t2.Item1.X.ToString() + " " + t2.Item1.Y.ToString() + "\n");
+                        //   File.AppendAllText("log.txt", t2.Item1.X.ToString() + " " + t2.Item1.Y.ToString() + "\n");
 
                         if (Math.Abs(t2.Item1.Y - dy) < 1 && Math.Abs(t2.Item1.X - dx) < 1)
                         {
@@ -405,7 +418,7 @@ namespace floating_island
                     {
                         queue.Add(t3);
 
-                   //     File.AppendAllText("log.txt", t3.Item1.X.ToString() + " " + t3.Item1.Y.ToString() + "\n");
+                        //     File.AppendAllText("log.txt", t3.Item1.X.ToString() + " " + t3.Item1.Y.ToString() + "\n");
 
                         if (Math.Abs(t3.Item1.Y - dy) < 1 && Math.Abs(t3.Item1.X - dx) < 1)
                         {
@@ -417,7 +430,7 @@ namespace floating_island
                     {
                         queue.Add(t4);
 
-                    //    File.AppendAllText("log.txt", t4.Item1.X.ToString() + " " + t4.Item1.Y.ToString() + "\n");
+                        //    File.AppendAllText("log.txt", t4.Item1.X.ToString() + " " + t4.Item1.Y.ToString() + "\n");
 
                         if (Math.Abs(t4.Item1.Y - dy) < 1 && Math.Abs(t4.Item1.X - dx) < 1)
                         {
@@ -425,7 +438,7 @@ namespace floating_island
                         }
                     }
                 }
-                
+
                 current = queue;
             }
 
@@ -440,6 +453,15 @@ namespace floating_island
             tmp_list.Add(this.x.ToString());
             tmp_list.Add(this.y.ToString());
             tmp_list.Add(this.type.ToString());
+            
+            if(this.itemInHand==null)
+            {
+                tmp_list.Add("null");
+            }
+            else
+            {
+                tmp_list.AddRange(this.itemInHand.save_list());
+            }
 
             return tmp_list;
         }
