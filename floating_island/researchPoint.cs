@@ -52,5 +52,10 @@ namespace floating_island
 
             spriteBatch.DrawString(this.font, this.amount.ToString(), new Vector2(x + (int)(this.texture.Width * 0.6f), y + (int)((this.texture.Height - this.background.Height) / 2) + (int)((this.background.Height - this.font.MeasureString(this.amount.ToString()).Y) / 2)), Color.White);
         }
+
+        public Vector2 getDrawRect()
+        {
+            return new Vector2(this.background.Width + (int)(this.texture.Width / 2), Math.Max(this.texture.Height, Math.Max(this.background.Height, this.font.MeasureString(this.amount.ToString()).Y)));
+        }
     }
 }

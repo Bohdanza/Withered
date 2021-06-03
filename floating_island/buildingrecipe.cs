@@ -14,7 +14,8 @@ namespace floating_island
     public class researchRecipe
     {
         public int type { get; private set; }
-
+        private Texture2D background;
+        
 
     }
 }

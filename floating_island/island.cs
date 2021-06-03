@@ -43,12 +43,10 @@ namespace floating_island
         public int ticks = 0;
         private List<building> buildingRecipeList;
 
-        private ResearchPoint testpoint;
+        private List<ResearchPoint> researchPoints = new List<ResearchPoint>();
 
         public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
         {
-            this.testpoint = new ResearchPoint(cm, 0, 113, null);
-
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
@@ -93,6 +91,13 @@ namespace floating_island
 
         private void generate(int biome, ContentManager cm)
         {
+            var tmpfont = cm.Load<SpriteFont>("pointsFont");
+
+            for(int i=0; i<2; i++)
+            {
+                this.researchPoints.Add(new ResearchPoint(cm, i, 0, tmpfont));
+            }
+
             var rnd = new Random();
 
             int tmp_c = rnd.Next(0, 100);
@@ -280,6 +285,19 @@ namespace floating_island
                 tmpf.Close();
             }
 
+            //preparing points and researches file
+            if (!File.Exists(path + "researches"))
+            {
+                var tmpf = File.Create(path + "researches");
+                tmpf.Close();
+            }
+            else
+            {
+                File.Delete(path + "researches");
+                var tmpf = File.Create(path + "researches");
+                tmpf.Close();
+            }
+
             using (StreamWriter sr = new StreamWriter(path + "map_objects"))
             {
                 foreach (var current_object in map_Objects)
@@ -292,107 +310,134 @@ namespace floating_island
                     }
                 }
             }
+
+            using (StreamWriter sr = new StreamWriter(path + "researches"))
+            {
+                sr.WriteLine(this.researchPoints.Count);
+
+                for (int i = 0; i < this.researchPoints.Count; i++)
+                {
+                    sr.WriteLine(this.researchPoints[i].amount);
+                }
+            }
         }
 
         private bool Load(string path, ContentManager cm)
         {
-            if (path[path.Length - 1] != '\\' && path[path.Length - 1] != '/')
+            try
             {
-                path += @"\";
-            }
-
-            if (!File.Exists(path+"map_objects"))
-            {
-                return false;
-            }
-
-            using(StreamReader sr = new StreamReader(path + "map_objects"))
-            {
-                List<string> tmp_str_list = sr.ReadToEnd().Split('\n').ToList();
-
-                int i = 0;
-
-                while(i<tmp_str_list.Count-1)
+                if (path[path.Length - 1] != '\\' && path[path.Length - 1] != '/')
                 {
-                    tmp_str_list[i] = tmp_str_list[i].Trim('\n');
-                    tmp_str_list[i] = tmp_str_list[i].Trim('\r');
+                    path += @"\";
+                }
 
-                    if (tmp_str_list[i] == "#plant")
+                if (!File.Exists(path + "researches") || !File.Exists(path + "map_objects"))
+                {
+                    return false;
+                }
+
+                using (StreamReader sr = new StreamReader(path + "map_objects"))
+                {
+                    List<string> tmp_str_list = sr.ReadToEnd().Split('\n').ToList();
+
+                    int i = 0;
+
+                    while (i < tmp_str_list.Count - 1)
                     {
-                        int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
-                        float tmp_x = float.Parse(tmp_str_list[i + 2]);
-                        float tmp_y = float.Parse(tmp_str_list[i + 3]);
+                        tmp_str_list[i] = tmp_str_list[i].Trim('\n');
+                        tmp_str_list[i] = tmp_str_list[i].Trim('\r');
 
-                        int tmp_grow = Int32.Parse(tmp_str_list[i + 4]);
-
-                        this.add_object(new plant(cm, tmp_x, tmp_y, tmp_type, tmp_grow));
-
-                        i += 5;
-                    }
-                    else if (tmp_str_list[i] == "#item")
-                    {
-                        int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
-                        float tmp_x = float.Parse(tmp_str_list[i + 2]);
-                        float tmp_y = float.Parse(tmp_str_list[i + 3]);
-                        bool tmp_bool = bool.Parse(tmp_str_list[i + 4]);
-                        int amount = Int32.Parse(tmp_str_list[i + 5]);
-
-                        this.add_object(new item(cm, tmp_x, tmp_y, tmp_type, tmp_bool, amount, item_samples[tmp_type]));
-
-                        i += 6;
-                    }
-                    else if (tmp_str_list[i] == "#hero")
-                    {
-                        float tmp_x = float.Parse(tmp_str_list[i + 1]);
-                        float tmp_y = float.Parse(tmp_str_list[i + 2]);
-                        int tmp_type = Int32.Parse(tmp_str_list[i + 3]);
-
-                        item tmpitem;
-
-                        if (tmp_str_list[i + 4].Trim('\r') == "null" || tmp_str_list[i + 4].Trim('\n') == "null")
+                        if (tmp_str_list[i] == "#plant")
                         {
-                            tmpitem = null;
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 3]);
 
-                            i++;
+                            int tmp_grow = Int32.Parse(tmp_str_list[i + 4]);
+
+                            this.add_object(new plant(cm, tmp_x, tmp_y, tmp_type, tmp_grow));
+
+                            i += 5;
                         }
-                        else
+                        else if (tmp_str_list[i] == "#item")
                         {
-                            int tmp_type1 = Int32.Parse(tmp_str_list[i + 5]);
-                            float tmp_x1 = float.Parse(tmp_str_list[i + 6]);
-                            float tmp_y1 = float.Parse(tmp_str_list[i + 7]);
-                            bool tmp_bool1 = bool.Parse(tmp_str_list[i + 8]);
-                            int amount1 = Int32.Parse(tmp_str_list[i + 9]);
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 3]);
+                            bool tmp_bool = bool.Parse(tmp_str_list[i + 4]);
+                            int amount = Int32.Parse(tmp_str_list[i + 5]);
 
-                            tmpitem = new item(cm, tmp_x1, tmp_y1, tmp_type1, tmp_bool1, amount1, item_samples[tmp_type1]);
+                            this.add_object(new item(cm, tmp_x, tmp_y, tmp_type, tmp_bool, amount, item_samples[tmp_type]));
 
                             i += 6;
                         }
-
-                        this.add_object(new hero(cm, tmp_type, tmp_x, tmp_y, tmpitem));
-
-                        i += 4;
-                    }
-                    else if (tmp_str_list[i] == "#building")
-                    {
-                        int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
-                        float tmp_x = float.Parse(tmp_str_list[i + 2]);
-                        float tmp_y = float.Parse(tmp_str_list[i + 3]);
-
-                        int tmpn = Int32.Parse(tmp_str_list[i + 4]), z=i+4;
-
-                        List<item> tmpItemList = new List<item>();
-
-                        for(i=z+1; i<z+tmpn*2; i+=2)
+                        else if (tmp_str_list[i] == "#hero")
                         {
-                            int tmp_type1 = Int32.Parse(tmp_str_list[i]);
-                            int number = Int32.Parse(tmp_str_list[i+1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 1]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 2]);
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 3]);
 
-                            tmpItemList.Add(new item(cm, 0f, 0f, tmp_type1, false, number, this.item_samples[tmp_type1]));
+                            item tmpitem;
+
+                            if (tmp_str_list[i + 4].Trim('\r') == "null" || tmp_str_list[i + 4].Trim('\n') == "null")
+                            {
+                                tmpitem = null;
+
+                                i++;
+                            }
+                            else
+                            {
+                                int tmp_type1 = Int32.Parse(tmp_str_list[i + 5]);
+                                float tmp_x1 = float.Parse(tmp_str_list[i + 6]);
+                                float tmp_y1 = float.Parse(tmp_str_list[i + 7]);
+                                bool tmp_bool1 = bool.Parse(tmp_str_list[i + 8]);
+                                int amount1 = Int32.Parse(tmp_str_list[i + 9]);
+
+                                tmpitem = new item(cm, tmp_x1, tmp_y1, tmp_type1, tmp_bool1, amount1, item_samples[tmp_type1]);
+
+                                i += 6;
+                            }
+
+                            this.add_object(new hero(cm, tmp_type, tmp_x, tmp_y, tmpitem));
+
+                            i += 4;
                         }
+                        else if (tmp_str_list[i] == "#building")
+                        {
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 3]);
 
-                        this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList));
+                            int tmpn = Int32.Parse(tmp_str_list[i + 4]), z = i + 4;
+
+                            List<item> tmpItemList = new List<item>();
+
+                            for (i = z + 1; i < z + tmpn * 2; i += 2)
+                            {
+                                int tmp_type1 = Int32.Parse(tmp_str_list[i]);
+                                int number = Int32.Parse(tmp_str_list[i + 1]);
+
+                                tmpItemList.Add(new item(cm, 0f, 0f, tmp_type1, false, number, this.item_samples[tmp_type1]));
+                            }
+
+                            this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList));
+                        }
                     }
                 }
+
+                using (StreamReader sr = new StreamReader(path + "researches"))
+                {
+                    int n = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
+    
+                    for (int i=0; i<n; i++)
+                    {
+                        this.researchPoints.Add(new ResearchPoint(cm, i, Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r')), null));
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                return false;
             }
 
             return true;
@@ -618,7 +663,14 @@ namespace floating_island
                 }
             }
 
-            this.testpoint.draw(spriteBatch, 1370, 15);
+            int start = 1600;
+
+            for(int i=0; i<this.researchPoints.Count; i++)
+            {
+                start -= (int)(this.researchPoints[i].getDrawRect().X * 1.1f);
+
+                this.researchPoints[i].draw(spriteBatch, start, (int)(this.researchPoints[i].getDrawRect().Y * 0.1f));
+            }    
         }
         
         public bool add_object(map_object object_to_add)
