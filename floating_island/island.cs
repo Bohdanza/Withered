@@ -44,7 +44,7 @@ namespace floating_island
         private List<building> buildingRecipeList;
 
         private List<ResearchPoint> researchPoints = new List<ResearchPoint>();
-
+        
         public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
         {
             this.plant_samples = plant_samples;
@@ -670,9 +670,9 @@ namespace floating_island
                 start -= (int)(this.researchPoints[i].getDrawRect().X * 1.1f);
 
                 this.researchPoints[i].draw(spriteBatch, start, (int)(this.researchPoints[i].getDrawRect().Y * 0.1f));
-            }    
+            }
         }
-        
+
         public bool add_object(map_object object_to_add)
         {
             //we need to check if some of our hitbox points cant be where they want to be

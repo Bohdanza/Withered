@@ -4417,6 +4417,18 @@
 /processorParam:TextureFormat=Color
 /build:0plant0no0.png
 
+#begin 0rec.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:0rec.png
+
 #begin 0research_point.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -4608,6 +4620,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:buildingbackground.png
+
+#begin buildingrecipebackground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:buildingrecipebackground.png
 
 #begin frame.png
 /importer:TextureImporter
