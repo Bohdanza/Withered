@@ -23,13 +23,14 @@ namespace floating_island
         private Texture2D texture;
         public bool researched { get; private set; }
         public List<int> researchPointsNeeded = new List<int>();
+        public int x = 0, y = 0;
 
         public researchRecipe(ContentManager cm, int type, bool researched, int parentType)
-        {
+        { 
+            this.type = type;
+
             this.background = cm.Load<Texture2D>("buildingrecipebackground");
             this.texture = cm.Load<Texture2D>(this.type.ToString() + "rec");
-
-            this.type = type;
 
             this.researched = researched;
             this.parentType = parentType;
@@ -59,13 +60,13 @@ namespace floating_island
         {
             if (this.researched)
             {
-                spriteBatch.Draw(this.background, new Vector2(x, y), Color.White);
-                spriteBatch.Draw(this.texture, new Vector2(x, y), Color.White);
+                spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), Color.White);
+                spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), Color.White);
             }
             else
             {
-                spriteBatch.Draw(this.background, new Vector2(x, y), new Color(175, 175, 175));
-                spriteBatch.Draw(this.texture, new Vector2(x, y), new Color(175, 175, 175));
+                spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
             }
         }
 
