@@ -53,10 +53,10 @@ namespace floating_island
             tmprec.Add(new researchRecipe(cm, 0, false, -1));
             tmprec.Add(new researchRecipe(cm, 1, false, 0));
             tmprec.Add(new researchRecipe(cm, 2, false, 0));
-            tmprec.Add(new researchRecipe(cm, 3, false, 1));
+            tmprec.Add(new researchRecipe(cm, 3, false, 2));
             tmprec.Add(new researchRecipe(cm, 4, false, 1));
-            tmprec.Add(new researchRecipe(cm, 5, false, 2));
-            tmprec.Add(new researchRecipe(cm, 6, false, 2));
+            tmprec.Add(new researchRecipe(cm, 5, false, 3));
+            tmprec.Add(new researchRecipe(cm, 6, false, 3));
 
             this.testTree = new researchTree(tmprec);
 
