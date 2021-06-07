@@ -58,7 +58,7 @@ namespace floating_island
             tmprec.Add(new researchRecipe(cm, 5, false, 3));
             tmprec.Add(new researchRecipe(cm, 6, false, 3));
 
-            this.testTree = new researchTree(tmprec);
+            this.testTree = new researchTree(tmprec, cm);
 
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
@@ -727,7 +727,7 @@ namespace floating_island
                     spriteBatch.Draw(this.researchBackground, new Vector2(0, 0), Color.White);
                     this.researchMenuClose.draw(spriteBatch);
 
-                    this.testTree.draw(spriteBatch, 800, 0);
+                    this.testTree.draw(spriteBatch, 800-this.testTree.width/2, 50);
                 }
             }
         }

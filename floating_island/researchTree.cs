@@ -13,10 +13,15 @@ namespace floating_island
 {
     public class researchTree
     {
+        private Texture2D edge;
         public List<researchRecipe> researchRecipes { get; private set; }
+        public int width { get; private set; }
+        public int height { get; private set; }
 
-        public researchTree(List<researchRecipe> researchRecipes)
+        public researchTree(List<researchRecipe> researchRecipes, ContentManager cm)
         {
+            this.edge = cm.Load<Texture2D>("edge");
+
             this.researchRecipes = researchRecipes;
 
             int current = -1;
@@ -60,6 +65,7 @@ namespace floating_island
             }
 
             maxpx = currentDepth * 87 * 2;
+            this.height = maxpx;
 
             int tmpz = 0;
 
@@ -87,6 +93,8 @@ namespace floating_island
                     tmpz++;
                 }
             }
+
+            this.width = leaves.Count * 174;
 
             //for other
             while(currentDepth>=0)
@@ -118,10 +126,35 @@ namespace floating_island
                 }
             }
         }
-        
+
         public void draw(SpriteBatch spriteBatch, int x, int y)
         {
-            foreach(var currentRecipe in this.researchRecipes)
+            foreach (var currentRecipe in this.researchRecipes)
+            {
+                foreach (var currentRecipe1 in this.researchRecipes)
+                {
+                    if (currentRecipe1.type == currentRecipe.parentType)
+                    {
+                        int tmpw = Math.Abs(currentRecipe.x - currentRecipe1.x);
+                        int tmph = Math.Abs(currentRecipe.y - currentRecipe1.y);
+
+                        int length = (int)Math.Sqrt(tmpw * tmpw + tmph * tmph);
+
+                        float rot = (float)Math.Atan((float)tmph / tmpw);
+
+                        // rot = (float)rot / 360;
+
+                        if (currentRecipe1.x < currentRecipe.x)
+                        {
+                            rot = (float)(Math.PI - rot);
+                        }
+
+                        spriteBatch.Draw(this.edge, new Vector2(currentRecipe.x + x + 43, currentRecipe.y + y + 43), null, Color.White, rot, new Vector2(0, 0), new Vector2(length / this.edge.Width, 1), SpriteEffects.None, 0);
+                    }
+                }
+            }
+
+            foreach (var currentRecipe in this.researchRecipes)
             {
                 currentRecipe.draw(spriteBatch, x, y);
             }
