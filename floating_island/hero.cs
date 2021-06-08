@@ -389,10 +389,11 @@ namespace floating_island
                     t2 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X - 1, currentTuple.Item1.Y), currentTuple.Item2 + "a");
                     t3 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y + 1), currentTuple.Item2 + "s");
                     t4 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y - 1), currentTuple.Item2 + "w");
-
-                    if (t1.Item1.X >= 0 && t1.Item1.X < mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t1.Item1))
+                    
+                    if (t1.Item1.X >= 0 && t1.Item1.X < mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1)
                     {
                         queue.Add(t1);
+                        mainList[(int)(t1.Item1.X)][(int)(t1.Item1.Y)] = 0;
 
                         //   File.AppendAllText("log.txt", t1.Item1.X.ToString() + " " + t1.Item1.Y.ToString() + "\n");
 
@@ -402,9 +403,10 @@ namespace floating_island
                         }
                     }
 
-                    if (t2.Item1.X >= 0 && t2.Item1.X < mainList.Count && t2.Item1.Y >= 0 && t2.Item1.Y < mainList[(int)(t2.Item1.X)].Count && mainList[(int)t2.Item1.X][(int)t2.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t2.Item1))
+                    if (t2.Item1.X >= 0 && t2.Item1.X < mainList.Count && t2.Item1.Y >= 0 && t2.Item1.Y < mainList[(int)(t2.Item1.X)].Count && mainList[(int)t2.Item1.X][(int)t2.Item1.Y] == 1)
                     {
                         queue.Add(t2);
+                        mainList[(int)(t2.Item1.X)][(int)(t2.Item1.Y)] = 0;
 
                         //   File.AppendAllText("log.txt", t2.Item1.X.ToString() + " " + t2.Item1.Y.ToString() + "\n");
 
@@ -414,9 +416,10 @@ namespace floating_island
                         }
                     }
 
-                    if (t3.Item1.X >= 0 && t3.Item1.X < mainList.Count && t3.Item1.Y >= 0 && t3.Item1.Y < mainList[(int)(t3.Item1.X)].Count && mainList[(int)t3.Item1.X][(int)t3.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t3.Item1))
+                    if (t3.Item1.X >= 0 && t3.Item1.X < mainList.Count && t3.Item1.Y >= 0 && t3.Item1.Y < mainList[(int)(t3.Item1.X)].Count && mainList[(int)t3.Item1.X][(int)t3.Item1.Y] == 1)
                     {
                         queue.Add(t3);
+                        mainList[(int)(t3.Item1.X)][(int)(t3.Item1.Y)] = 0;
 
                         //     File.AppendAllText("log.txt", t3.Item1.X.ToString() + " " + t3.Item1.Y.ToString() + "\n");
 
@@ -426,9 +429,10 @@ namespace floating_island
                         }
                     }
 
-                    if (t4.Item1.X >= 0 && t4.Item1.X < mainList.Count && t4.Item1.Y >= 0 && t4.Item1.Y < mainList[(int)(t4.Item1.X)].Count && mainList[(int)t4.Item1.X][(int)t4.Item1.Y] == 1 && !queue.Any(m => m.Item1 == t4.Item1))
+                    if (t4.Item1.X >= 0 && t4.Item1.X < mainList.Count && t4.Item1.Y >= 0 && t4.Item1.Y < mainList[(int)(t4.Item1.X)].Count && mainList[(int)t4.Item1.X][(int)t4.Item1.Y] == 1)
                     {
                         queue.Add(t4);
+                        mainList[(int)(t4.Item1.X)][(int)(t4.Item1.Y)] = 0;
 
                         //    File.AppendAllText("log.txt", t4.Item1.X.ToString() + " " + t4.Item1.Y.ToString() + "\n");
 
