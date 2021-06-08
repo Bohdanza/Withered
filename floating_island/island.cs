@@ -481,8 +481,6 @@ namespace floating_island
             this.mx = (float)(this.currentState.X - 316 - this.draw_x) / 966;
             this.my = (float)(this.currentState.Y - 182 - this.draw_y) / 696;
 
-            bool somethingSelected = false;
-
             if (this.selectedBuilding == null && this.researchMenuClosed)
             {
                 this.researchMenuOpen.update();
@@ -493,11 +491,6 @@ namespace floating_island
                 {
                     this.researchMenuClosed = false;
                 }
-            }
-
-            if(this.selectedBuilding!=null)
-            {
-                somethingSelected = true;
             }
 
             if (this.researchMenuClosed)
@@ -528,8 +521,6 @@ namespace floating_island
 
                         if (this.buildingMenuOpen.pressed)
                         {
-                            somethingSelected = true;
-
                             this.buildingMenuClosed = false;
                         }
                     }
@@ -556,8 +547,6 @@ namespace floating_island
 
                         if (this.buildingMenuClose.pressed)
                         {
-                            somethingSelected = true;
-
                             this.buildingMenuClosed = true;
                         }
                     }
@@ -565,7 +554,7 @@ namespace floating_island
 
                 if (this.selectedBuilding != null)
                 {
-                    this.selectedBuilding.update(cm, this, -1, somethingSelected);
+                    this.selectedBuilding.update(cm, this, -1);
                     this.selectedBuilding.changeCoords(new Vector2(this.mx, this.my));
 
                     if (this.currentState.LeftButton == ButtonState.Pressed)
@@ -573,40 +562,50 @@ namespace floating_island
                         if (this.add_object(this.selectedBuilding))
                         {
                             this.selectedBuilding = null;
-
-                            somethingSelected = true;
                         }
-                    }
-                }
-
-                //checking if map objects were selected
-                foreach (var currentObject in this.map_Objects)
-                {
-                    if (currentObject.selected)
-                    {
-                        somethingSelected = true;
                     }
                 }
 
                 //updating all the objects
                 int l = 1, pc = this.map_Objects.Count;
 
+                List<bool> completedList = new List<bool>();
+
+                for (int i = 0; i < this.map_Objects.Count; i += l)
+                {
+                    if (this.map_Objects[i].save_list()[0] == "#building")
+                    {
+                        completedList.Add(((building)this.map_Objects[i]).itemsToComplete.Count <= 0);
+                    }
+                    else
+                    {
+                        completedList.Add(true);
+                    }
+                }
+                
                 for (int i = 0; i < this.map_Objects.Count; i += l)
                 {
                     l = 1;
 
-                    this.map_Objects[i].update(cm, this, i, somethingSelected);
+                    this.map_Objects[i].update(cm, this, i);
 
                     if (this.map_Objects.Count < pc)
                     {
                         l = 0;
                     }
-                    else if (this.map_Objects[i].selected)
-                    {
-                        somethingSelected = true;
-                    }
 
                     pc = this.map_Objects.Count;
+                }
+
+                for (int i = 0; i < this.map_Objects.Count; i += l)
+                {
+                    if (this.map_Objects[i].save_list()[0] == "#building")
+                    {
+                        if ((((building)this.map_Objects[i]).itemsToComplete.Count <= 0) != completedList[i])
+                        {
+                            this.addResearchPoints(((building)this.map_Objects[i]).researchPointsAdded);
+                        }
+                    }
                 }
 
                 if (this.currentState.LeftButton == ButtonState.Released && this.oldState.LeftButton == ButtonState.Pressed)
@@ -824,6 +823,25 @@ namespace floating_island
             }
 
             return true;
+        }
+
+        public void addResearchPoints(Tuple<int, int> points)
+        {
+            if(points.Item1<this.researchPoints.Count)
+            {
+                this.researchPoints[points.Item1].amount += points.Item2;
+            }
+        }
+
+        public void addResearchPoints(List<Tuple<int, int>> points)
+        {
+            foreach(var currentTuple in points)
+            {
+                if (currentTuple.Item1 < this.researchPoints.Count)
+                {
+                    this.researchPoints[currentTuple.Item1].amount += currentTuple.Item2;
+                }
+            }
         }
     }
 }

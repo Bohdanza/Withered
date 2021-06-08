@@ -15,8 +15,6 @@ namespace floating_island
     {
         public override float x { get; protected set; }
         public override float y { get; protected set; }
-        public override List<int> what_to_do_with { get; protected set; } = new List<int>();
-
         public float speed { get; private set; }
         public string path { get; private set; } = "";
         public override Vector2 hitbox_left { get; protected set; }
@@ -27,12 +25,10 @@ namespace floating_island
 
         public string action { get; private set; }
         public string direction { get; protected set; }
-        public override bool selected { get; protected set; }
 
         public override int type { get; protected set; }
 
         public List<int> action_types { get; protected set; } = new List<int>();
-        public List<button> action_buttons { get; protected set; } = new List<button>();
         public item itemInHand { get; protected set; }
 
         public hero(ContentManager cm, int type, float x, float y, item handItem)
@@ -48,88 +44,57 @@ namespace floating_island
             this.action = "no";
             this.direction = "s";
 
-            for(int i=0; i<4; i++)
-            {
-                this.action_types.Add(i);
-
-                Texture2D tmptex0 = cm.Load<Texture2D>(i.ToString() + "actbtn0");
-                Texture2D tmptex1 = cm.Load<Texture2D>(i.ToString() + "actbtn1");
-
-                int tmpw = tmptex0.Width, tmph = tmptex0.Height;
-
-                this.action_buttons.Add(new button(1, 0, 0, tmpw, tmph, tmptex0, tmptex1));
-            }
-
             this.update_texture(cm, true);
         }
-        
-        public override void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
+
+        public override void update(ContentManager cm, island my_island, int my_index)
         {
             bool action_changes = false;
-            
+
             string pact = this.action, pdir = this.direction;
 
             float px = this.x;
             float py = this.y;
 
-            if (this.selected)
+            var rnd = new Random();
+            
+            int rndr = rnd.Next(0, (int)(0.1f / this.speed));
+
+            if (rndr == 0)
             {
-                foreach (var current_button in this.action_buttons)
+                this.action = "wa";
+
+                int rndr1 = rnd.Next(0, 4);
+
+                if (rndr1 == 0)
                 {
-                    bool pac = current_button.pressed;
+                    this.direction = "w";
+                }
 
-                    current_button.update();
+                if (rndr1 == 1)
+                {
+                    this.direction = "a";
+                }
 
-                    bool cac = current_button.pressed;
+                if (rndr1 == 2)
+                {
+                    this.direction = "s";
+                }
 
-                    if (pac != cac)
-                    {
-                        action_changes = true;
-                    }
+                if (rndr1 == 3)
+                {
+                    this.direction = "d";
                 }
             }
-            else
+            else if (rndr == 1)
             {
-                var rnd = new Random();
-
-                int rndr = rnd.Next(0, (int)(0.1f / this.speed));
-
-                if (rndr == 0)
-                {
-                    this.action = "wa";
-
-                    int rndr1 = rnd.Next(0, 4);
-
-                    if (rndr1 == 0)
-                    {
-                        this.direction = "w";
-                    }
-
-                    if (rndr1 == 1)
-                    {
-                        this.direction = "a";
-                    }
-
-                    if (rndr1 == 2)
-                    {
-                        this.direction = "s";
-                    }
-
-                    if (rndr1 == 3)
-                    {
-                        this.direction = "d";
-                    }
-                }
-                else if (rndr == 1)
-                {
-                    this.action = "no";
-                }
+                this.action = "no";
             }
 
             int l = 1;
 
             //checking if shit in hand must not EXIST AT ALL
-            if (this.itemInHand!=null && this.itemInHand.number <= 0)
+            if (this.itemInHand != null && this.itemInHand.number <= 0)
             {
                 this.itemInHand = null;
             }
@@ -140,7 +105,7 @@ namespace floating_island
             List<item> neededItems = new List<item>();
 
             //checking map objects
-            for (int i=0; i<my_island.map_Objects.Count; i+=l)
+            for (int i = 0; i < my_island.map_Objects.Count; i += l)
             {
                 l = 1;
 
@@ -155,10 +120,10 @@ namespace floating_island
                     }
                     else
                     {
-                        discoveredItems.Add((item)my_island.map_Objects[i]);                       
+                        discoveredItems.Add((item)my_island.map_Objects[i]);
                     }
                 }
-                else if(my_island.map_Objects[i].save_list()[0]=="#building")
+                else if (my_island.map_Objects[i].save_list()[0] == "#building")
                 {
                     if (this.itemInHand != null && ((building)my_island.map_Objects[i]).ItemCanBeAdded(itemInHand))
                     {
@@ -183,13 +148,13 @@ namespace floating_island
 
                 for (int i = 0; i < neededItems.Count && flag; i++)
                 {
-                    foreach(var currentItem in discoveredItems)
+                    foreach (var currentItem in discoveredItems)
                     {
-                        if(currentItem.type==neededItems[i].type)
+                        if (currentItem.type == neededItems[i].type)
                         {
                             this.path = this.find_path(this.x, this.y, currentItem.x, currentItem.y, this.speed, my_island, my_index, -1);
-                            
-                            if(this.path!=null)
+
+                            if (this.path != null)
                             {
                                 flag = false;
                             }
@@ -209,7 +174,7 @@ namespace floating_island
             }
 
             //walking update
-            if (this.action == "wa" && !this.selected)
+            if (this.action == "wa")
             {
                 if (this.direction == "w")
                 {
@@ -232,29 +197,6 @@ namespace floating_island
                 }
             }
 
-            //checking if was selected/unselected
-            if (my_island.currentState.LeftButton == ButtonState.Released && my_island.oldState.LeftButton == ButtonState.Pressed && my_island.timeSinceLastPress >= 20)
-            {   
-                float tmpw = this.textures[this.img_phase].Width / 966f / 2f;
-                float tmph = this.textures[this.img_phase].Height / 686f / 2f;
-
-                if (!somethingSelected && my_island.mx >= this.x - tmpw && my_island.mx <= this.x + tmpw && my_island.my <= this.y && my_island.my >= this.y - tmph * 2)
-                {
-                    this.path = null;
-
-                    this.action = "no";
-
-                    this.selected = true;
-                }
-                else
-                {
-                    if (!action_changes)
-                    {
-                        this.selected = false;
-                    }
-                }
-            }
-
             //checking if coords were changed properly, otherwise rolling them back
             if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
             {
@@ -263,7 +205,7 @@ namespace floating_island
             }
 
             //updating texture
-            if(this.action!=pact||this.direction!=pdir)
+            if (this.action != pact || this.direction != pdir)
             {
                 this.update_texture(cm, true);
             }
@@ -275,12 +217,12 @@ namespace floating_island
 
         private void update_texture(ContentManager cm, bool something_changed = false)
         {
-            if(something_changed)
+            if (something_changed)
             {
                 this.img_phase = 0;
                 this.textures = new List<Texture2D>();
 
-                while(File.Exists(@"Content\" + this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString() + ".xnb"))
+                while (File.Exists(@"Content\" + this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString() + ".xnb"))
                 {
                     this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString()));
 
@@ -293,45 +235,16 @@ namespace floating_island
             {
                 this.img_phase++;
 
-                if(img_phase>=this.textures.Count)
+                if (img_phase >= this.textures.Count)
                 {
                     img_phase = 0;
                 }
             }
         }
-        
+
         public override void draw(SpriteBatch spriteBatch, int x, int y)
         {
-            int sumx = 0;
-
-            foreach (var current_button in this.action_buttons)
-            {
-                sumx += (int)(current_button.normal_texture.Width*1.1f);
-            }
-
-            int dx = x-(int)(sumx/2);
-
-            foreach (var current_button in this.action_buttons)
-            {
-                current_button.x = dx;
-                current_button.y = y - this.textures[this.img_phase].Height - (int)(current_button.normal_texture.Height*1.1);
-
-                dx += (int)(current_button.normal_texture.Width * 1.1f);
-            }
-
-            if (this.selected == false)
-            {
-                spriteBatch.Draw(this.textures[this.img_phase], new Vector2((int)(x - this.textures[this.img_phase].Width / 2), (int)(y - this.textures[this.img_phase].Height)), Color.White);
-            }
-            else
-            {
-                spriteBatch.Draw(this.textures[this.img_phase], new Vector2((int)(x - this.textures[this.img_phase].Width / 2), (int)(y - this.textures[this.img_phase].Height)), new Color(new Vector4(255, 0, 0, 255)));
-                
-                foreach (var current_button in this.action_buttons)
-                {
-                    current_button.draw(spriteBatch);
-                }
-            }
+            spriteBatch.Draw(this.textures[this.img_phase], new Vector2((int)(x - this.textures[this.img_phase].Width / 2), (int)(y - this.textures[this.img_phase].Height)), Color.White);
 
             if (this.itemInHand != null)
             {
@@ -389,7 +302,7 @@ namespace floating_island
                     t2 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X - 1, currentTuple.Item1.Y), currentTuple.Item2 + "a");
                     t3 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y + 1), currentTuple.Item2 + "s");
                     t4 = new Tuple<Vector2, string>(new Vector2(currentTuple.Item1.X, currentTuple.Item1.Y - 1), currentTuple.Item2 + "w");
-                    
+
                     if (t1.Item1.X >= 0 && t1.Item1.X < mainList.Count && t1.Item1.Y >= 0 && t1.Item1.Y < mainList[(int)(t1.Item1.X)].Count && mainList[(int)t1.Item1.X][(int)t1.Item1.Y] == 1)
                     {
                         queue.Add(t1);
@@ -457,8 +370,8 @@ namespace floating_island
             tmp_list.Add(this.x.ToString());
             tmp_list.Add(this.y.ToString());
             tmp_list.Add(this.type.ToString());
-            
-            if(this.itemInHand==null)
+
+            if (this.itemInHand == null)
             {
                 tmp_list.Add("null");
             }

@@ -13,15 +13,13 @@ namespace floating_island
 {
     public class map_object
     {
-        public virtual List<int> what_to_do_with { get; protected set; }
         public virtual float x { get; protected set; }
         public virtual float y { get; protected set; }
         public virtual int type { get; protected set; }
         public virtual Vector2 hitbox_left { get; protected set; }
         public virtual Vector2 hitbox_right { get; protected set; }
-        public virtual bool selected { get; protected set; }
 
-        public virtual void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
+        public virtual void update(ContentManager cm, island my_island, int my_index)
         {
 
         }

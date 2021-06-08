@@ -69,10 +69,9 @@ namespace floating_island
             }
             else
             {
+                this.main_world.update(this.Content);
                 this.saved = false;
             }
-            
-            this.main_world.update(this.Content);
 
             base.Update(gameTime);
         }

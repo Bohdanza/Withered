@@ -14,7 +14,6 @@ namespace floating_island
     public class item : map_object
     {
         List<Texture2D> textures = new List<Texture2D>();
-        public override List<int> what_to_do_with { get; protected set; }
         public bool on_the_ground { get; private set; } = false;
         public override float x { get; protected set; }
         public override float y { get; protected set; }
@@ -96,7 +95,7 @@ namespace floating_island
             }
         }
 
-        public override void update(ContentManager cm, island my_island, int my_index, bool somethingSeleted)
+        public override void update(ContentManager cm, island my_island, int my_index)
         {
             this.update_texture(cm);
         }

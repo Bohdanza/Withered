@@ -18,13 +18,13 @@ namespace floating_island
         public override Vector2 hitbox_right { get; protected set; }
         public override Vector2 hitbox_left { get; protected set; }
         public override int type { get; protected set; }
-        public override bool selected { get; protected set; }
-        public override List<int> what_to_do_with { get; protected set; }
+
         private int imgPhase, recipeImgPhase;
         List<Texture2D> textures = new List<Texture2D>();
         List<Texture2D> recipeTextures = new List<Texture2D>();
         public List<item> itemsToComplete { get; protected set; } = new List<item>();
-        
+        public List<Tuple<int, int>> researchPointsAdded { get; protected set; } = new List<Tuple<int, int>>();
+
         /// <summary>
         /// initializing with file reading
         /// </summary>
@@ -52,13 +52,19 @@ namespace floating_island
 
                 this.hitbox_left = new Vector2(float.Parse(tmp_list[currentInd]), float.Parse(tmp_list[currentInd+1]));
                 this.hitbox_right = new Vector2(float.Parse(tmp_list[currentInd+2]), float.Parse(tmp_list[currentInd+3]));
-            }
 
-            this.what_to_do_with = new List<int>();
+                currentInd += 4;
 
-            if (this.itemsToComplete.Count > 0)
-            {
-                this.what_to_do_with.Add(3);
+                tmpint = Int32.Parse(tmp_list[currentInd]);
+
+                tmpint = currentInd + tmpint * 2;
+
+                //reading researchpoints
+                //first is type, second is amount
+                for(currentInd = currentInd+1; currentInd<tmpint; currentInd+=2)
+                {
+                    this.researchPointsAdded.Add(new Tuple<int, int>(Int32.Parse(tmp_list[currentInd]), Int32.Parse(tmp_list[currentInd + 1])));
+                }
             }
 
             this.update_texture(cm, true);
@@ -94,13 +100,19 @@ namespace floating_island
 
                 this.hitbox_left = new Vector2(float.Parse(tmp_list[currentInd + 1]), float.Parse(tmp_list[currentInd + 2]));
                 this.hitbox_right = new Vector2(float.Parse(tmp_list[currentInd + 3]), float.Parse(tmp_list[currentInd + 4]));
-            }
 
-            this.what_to_do_with = new List<int>();
+                currentInd += 4;
 
-            if (this.itemsToComplete.Count > 0)
-            {
-                this.what_to_do_with.Add(3);
+                tmpint = Int32.Parse(tmp_list[currentInd]);
+
+                tmpint = currentInd + tmpint * 2;
+
+                //reading researchpoints
+                //first is type, second is amount
+                for (currentInd = currentInd + 1; currentInd < tmpint; currentInd += 2)
+                {
+                    this.researchPointsAdded.Add(new Tuple<int, int>(Int32.Parse(tmp_list[currentInd]), Int32.Parse(tmp_list[currentInd + 1])));
+                }
             }
 
             this.update_texture(cm, true);
@@ -130,13 +142,8 @@ namespace floating_island
             {
                 this.itemsToComplete.Add(new item(cm, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
-           
-            this.what_to_do_with = new List<int>();
 
-            if (this.itemsToComplete.Count > 0)
-            {
-                this.what_to_do_with.Add(3);
-            }
+            this.researchPointsAdded = sampleBuilding.researchPointsAdded;
 
             this.update_texture(cm, true);
         }
@@ -166,12 +173,7 @@ namespace floating_island
                 this.itemsToComplete.Add(new item(cm, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
 
-            this.what_to_do_with = new List<int>();
-
-            if (this.itemsToComplete.Count > 0)
-            {
-                this.what_to_do_with.Add(3);
-            }
+            this.researchPointsAdded = sampleBuilding.researchPointsAdded;
 
             this.update_texture(cm, true);
         }
@@ -224,7 +226,7 @@ namespace floating_island
             }
         }
 
-        public override void update(ContentManager cm, island my_island, int my_index, bool somethingSelected)
+        public override void update(ContentManager cm, island my_island, int my_index)
         {
             this.update_texture(cm, false);
         }
@@ -234,14 +236,7 @@ namespace floating_island
             int tmpw = this.textures[this.imgPhase].Width;
             int tmph = this.textures[this.imgPhase].Height;
 
-            if (this.selected)
-            {
-                spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.Red);
-            }
-            else
-            {
-                spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
-            }
+            spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
         }
 
         public void drawAsRecipe(SpriteBatch spriteBatch, int x, int y)
