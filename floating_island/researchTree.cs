@@ -163,6 +163,8 @@ namespace floating_island
 
         public void update(ContentManager cm, List<ResearchPoint> researchPoints, int x, int y)
         {
+            this.lastResearches = new List<researchRecipe>();
+
             foreach (var currentRecipe in this.researchRecipes)
             {
                 foreach (var currentRecipe1 in this.researchRecipes)

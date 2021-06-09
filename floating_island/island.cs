@@ -678,6 +678,14 @@ namespace floating_island
             {
                 this.mainResearchTree.update(cm, this.researchPoints, 800 - this.mainResearchTree.width / 2, 50);
 
+                foreach (var currentRecipe in this.mainResearchTree.lastResearches)
+                {
+                    foreach(var currentBuilding in currentRecipe.addedBuildings)
+                    {
+                        this.buildingRecipeList.Add(currentBuilding);
+                    }
+                }
+
                 this.researchMenuClose.update();
 
                 if(this.researchMenuClose.pressed)

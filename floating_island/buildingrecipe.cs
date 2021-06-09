@@ -17,6 +17,7 @@ namespace floating_island
     //I'll fix it later ©
     public class researchRecipe
     {
+        public List<building> addedBuildings { get; private set; } = new List<building>();
         public int type { get; private set; }
         public int parentType { get; private set; }
         private Texture2D background;
@@ -38,16 +39,26 @@ namespace floating_island
 
             using(StreamReader sr = new StreamReader(@"info\global\recipes\" + this.type.ToString() + @"\main_info"))
             {
+                List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
+
                 for(int i=0; i<3; i++)
                 {
                     try
                     {
-                        this.researchPointsNeeded.Add(Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r')));
+                        this.researchPointsNeeded.Add(Int32.Parse(tmplist[i].Trim('\n').Trim('\r')));
                     }
                     catch(Exception e)
                     {
                         this.researchPointsNeeded.Add(1);
                     }
+                }
+
+                int tmpn = Int32.Parse(tmplist[3].Trim('\n').Trim('\r'));
+                int currentStr;
+
+                for(currentStr=4; currentStr<4+tmpn; currentStr++)
+                {
+                    this.addedBuildings.Add(new building(cm, 0f, 0f, Int32.Parse(tmplist[currentStr].Trim('\n').Trim('\r'))));
                 }
             }
         }
