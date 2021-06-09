@@ -21,9 +21,10 @@ namespace floating_island
         public int parentType { get; private set; }
         private Texture2D background;
         private Texture2D texture;
-        public bool researched { get; private set; }
+        public bool researched;
         public List<int> researchPointsNeeded = new List<int>();
         public int x = 0, y = 0;
+        private MouseState oldState = Mouse.GetState();
 
         public researchRecipe(ContentManager cm, int type, bool researched, int parentType)
         { 
@@ -53,7 +54,7 @@ namespace floating_island
 
         public void update(ContentManager cm)
         {
-            ;
+            this.oldState = Mouse.GetState();
         }
 
         public void draw(SpriteBatch spriteBatch, int x, int y)
@@ -65,13 +66,31 @@ namespace floating_island
             }
             else
             {
-                spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
-                spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                Rectangle tmprect = new Rectangle(this.x + x, this.y + y, 87, 87);
+
+                if (oldState.LeftButton == ButtonState.Pressed && tmprect.Contains(oldState.X, oldState.Y))
+                {
+                    spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
+                    spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
+                }
+                else
+                {
+                    spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                    spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                }
             }
         }
 
         public bool canBeResearched(List<ResearchPoint> researchPoints)
         {
+            var mouseState = Mouse.GetState();
+            Rectangle tmprect = new Rectangle(this.x, this.y, 87, 87);
+
+            if (oldState.LeftButton != ButtonState.Pressed || mouseState.LeftButton != ButtonState.Released || !tmprect.Contains(mouseState.X, mouseState.Y))
+            {
+                return false;
+            }
+
             List<int> tmplist = this.researchPointsNeeded;
 
             foreach(var currentPoint in researchPoints)
@@ -91,6 +110,42 @@ namespace floating_island
             }
 
             return true;
+        }
+
+        public bool canBeResearched(List<ResearchPoint> researchPoints, int x, int y)
+        {
+            if (oldState.LeftButton == ButtonState.Pressed)
+            {
+                var mouseState = Mouse.GetState();
+                Rectangle tmprect = new Rectangle(this.x + x, this.y + y, 87, 87);
+
+                if (mouseState.LeftButton != ButtonState.Released || !tmprect.Contains(mouseState.X, mouseState.Y))
+                {
+                    return false;
+                }
+
+                List<int> tmplist = this.researchPointsNeeded;
+
+                foreach (var currentPoint in researchPoints)
+                {
+                    if (currentPoint.type < tmplist.Count)
+                    {
+                        tmplist[currentPoint.type] -= currentPoint.amount;
+                    }
+                }
+
+                foreach (var currentPoint in tmplist)
+                {
+                    if (currentPoint > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false; 
         }
     }
 }

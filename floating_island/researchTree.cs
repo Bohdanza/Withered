@@ -17,6 +17,7 @@ namespace floating_island
         public List<researchRecipe> researchRecipes { get; private set; }
         public int width { get; private set; }
         public int height { get; private set; }
+        public List<researchRecipe> lastResearches { get; private set; } = new List<researchRecipe>();
 
         public researchTree(List<researchRecipe> researchRecipes, ContentManager cm)
         {
@@ -77,13 +78,13 @@ namespace floating_island
 
                 for (int j = 0; j < this.researchRecipes.Count; j++)
                 {
-                    if(this.researchRecipes[j].parentType == this.researchRecipes[i].type)
+                    if (this.researchRecipes[j].parentType == this.researchRecipes[i].type)
                     {
                         tmpb = false;
                     }
                 }
 
-                if(tmpb)
+                if (tmpb)
                 {
                     leaves.Add(i);
                     tmplist[i] = 1;
@@ -97,7 +98,7 @@ namespace floating_island
             this.width = leaves.Count * 174;
 
             //for other
-            while(currentDepth>=0)
+            while (currentDepth >= 0)
             {
                 for (int i = 0; i < leaves.Count; i++)
                 {
@@ -118,7 +119,7 @@ namespace floating_island
 
                 for (int j = 0; j < this.researchRecipes.Count; j++)
                 {
-                    if(depth[j]==currentDepth)
+                    if (depth[j] == currentDepth)
                     {
                         this.researchRecipes[j].x /= tmplist[j];
                         leaves.Add(j);
@@ -159,5 +160,25 @@ namespace floating_island
                 currentRecipe.draw(spriteBatch, x, y);
             }
         }
+
+        public void update(ContentManager cm, List<ResearchPoint> researchPoints, int x, int y)
+        {
+            foreach (var currentRecipe in this.researchRecipes)
+            {
+                foreach (var currentRecipe1 in this.researchRecipes)
+                {
+                    if (currentRecipe1.type == currentRecipe.parentType && currentRecipe1.researched)
+                    {
+                        if (currentRecipe.canBeResearched(researchPoints, x, y))
+                        {
+                            currentRecipe.researched = true;
+                            this.lastResearches.Add(currentRecipe);
+                        }
+                    }
+                }
+
+                currentRecipe.update(cm);
+            }
+        } 
     }
 }

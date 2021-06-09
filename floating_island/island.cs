@@ -44,22 +44,10 @@ namespace floating_island
         private List<building> buildingRecipeList;
 
         private List<ResearchPoint> researchPoints = new List<ResearchPoint>();
-        private researchTree testTree;
+        private researchTree mainResearchTree;
 
         public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
         {
-            List<researchRecipe> tmprec = new List<researchRecipe>();
-
-            tmprec.Add(new researchRecipe(cm, 0, false, -1));
-            tmprec.Add(new researchRecipe(cm, 1, false, 0));
-            tmprec.Add(new researchRecipe(cm, 2, false, 0));
-            tmprec.Add(new researchRecipe(cm, 3, false, 2));
-            tmprec.Add(new researchRecipe(cm, 4, false, 1));
-            tmprec.Add(new researchRecipe(cm, 5, false, 3));
-            tmprec.Add(new researchRecipe(cm, 6, false, 3));
-
-            this.testTree = new researchTree(tmprec, cm);
-
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
@@ -113,6 +101,31 @@ namespace floating_island
 
         private void generate(int biome, ContentManager cm)
         {
+            //initializing recipe tree
+            using (StreamReader sr = new StreamReader(@"info\global\recipes\tree_info"))
+            {
+                List<researchRecipe> tmpres = new List<researchRecipe>();
+
+                List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
+
+                int n = Int32.Parse(tmplist[0]);
+
+                for(int i=1; i<n*2; i+=2)
+                {
+                    bool tmpbool = false;
+
+                    if(tmplist[i + 1].Trim('\n').Trim('\r')=="-1")
+                    {
+                        tmpbool = true;
+                    }
+
+                    tmpres.Add(new researchRecipe(cm, Int32.Parse(tmplist[i]), tmpbool, Int32.Parse(tmplist[i + 1])));
+                }
+
+                this.mainResearchTree = new researchTree(tmpres, cm);
+            }
+
+            //------
             var tmpfont = cm.Load<SpriteFont>("pointsFont");
 
             for(int i=0; i<2; i++)
@@ -341,6 +354,15 @@ namespace floating_island
                 {
                     sr.WriteLine(this.researchPoints[i].amount);
                 }
+
+                sr.WriteLine(this.mainResearchTree.researchRecipes.Count.ToString());
+
+                for (int i = 0; i < this.mainResearchTree.researchRecipes.Count; i++)
+                {
+                    sr.WriteLine(this.mainResearchTree.researchRecipes[i].type.ToString());
+                    sr.WriteLine(this.mainResearchTree.researchRecipes[i].researched.ToString());
+                    sr.WriteLine(this.mainResearchTree.researchRecipes[i].parentType.ToString());
+                }
             }
         }
 
@@ -455,6 +477,21 @@ namespace floating_island
                     {
                         this.researchPoints.Add(new ResearchPoint(cm, i, Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r')), null));
                     }
+
+                    n = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
+
+                    List<researchRecipe> tmpResList = new List<researchRecipe>();
+
+                    for(int i=0; i<n; i++)
+                    {
+                        int tmpType = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
+                        bool researched = bool.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
+                        int tmpParentType = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
+
+                        tmpResList.Add(new researchRecipe(cm, tmpType, researched, tmpParentType));
+                    }
+
+                    this.mainResearchTree = new researchTree(tmpResList, cm);
                 }
             }
             catch(Exception e)
@@ -639,6 +676,8 @@ namespace floating_island
             }
             else
             {
+                this.mainResearchTree.update(cm, this.researchPoints, 800 - this.mainResearchTree.width / 2, 50);
+
                 this.researchMenuClose.update();
 
                 if(this.researchMenuClose.pressed)
@@ -726,7 +765,7 @@ namespace floating_island
                     spriteBatch.Draw(this.researchBackground, new Vector2(0, 0), Color.White);
                     this.researchMenuClose.draw(spriteBatch);
 
-                    this.testTree.draw(spriteBatch, 800-this.testTree.width/2, 50);
+                    this.mainResearchTree.draw(spriteBatch, 800-this.mainResearchTree.width/2, 50);
                 }
             }
         }
