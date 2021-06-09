@@ -52,13 +52,6 @@ namespace floating_island
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
 
-            this.buildingRecipeList = new List<building>();
-
-            for(int i=0; i<1; i++)
-            {
-                this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i]));
-            }
-
             this.draw_l = 1;
 
             this.crust = cm.Load<Texture2D>("island_crust");
@@ -101,6 +94,13 @@ namespace floating_island
 
         private void generate(int biome, ContentManager cm)
         {
+            this.buildingRecipeList = new List<building>();
+
+            for (int i = 0; i < 1; i++)
+            {
+                this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i]));
+            }
+
             //initializing recipe tree
             using (StreamReader sr = new StreamReader(@"info\global\recipes\tree_info"))
             {
@@ -139,7 +139,7 @@ namespace floating_island
 
             int tmp_count, l;
 
-            if (tmp_c >= 50)
+            if (tmp_c >= 99)
             {
                 //adding mountain
 
@@ -364,6 +364,16 @@ namespace floating_island
                     sr.WriteLine(this.mainResearchTree.researchRecipes[i].parentType.ToString());
                 }
             }
+
+            using (StreamWriter sr = new StreamWriter(path + "building_recipes"))
+            {
+                sr.WriteLine(this.buildingRecipeList.Count.ToString());
+
+                foreach(var currentBuilding in this.buildingRecipeList)
+                {
+                    sr.WriteLine(currentBuilding.type.ToString());
+                }
+            }
         }
 
         private bool Load(string path, ContentManager cm)
@@ -472,8 +482,8 @@ namespace floating_island
                 using (StreamReader sr = new StreamReader(path + "researches"))
                 {
                     int n = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
-    
-                    for (int i=0; i<n; i++)
+
+                    for (int i = 0; i < n; i++)
                     {
                         this.researchPoints.Add(new ResearchPoint(cm, i, Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r')), null));
                     }
@@ -482,7 +492,7 @@ namespace floating_island
 
                     List<researchRecipe> tmpResList = new List<researchRecipe>();
 
-                    for(int i=0; i<n; i++)
+                    for (int i = 0; i < n; i++)
                     {
                         int tmpType = Int32.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
                         bool researched = bool.Parse(sr.ReadLine().Trim('\n').Trim('\r'));
@@ -493,8 +503,24 @@ namespace floating_island
 
                     this.mainResearchTree = new researchTree(tmpResList, cm);
                 }
+                
+                using (StreamReader sr = new StreamReader(path + "building_recipes"))
+                {
+                    this.buildingRecipeList = new List<building>();
+
+                    List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
+
+                    int n = Int32.Parse(tmplist[0]);
+
+                    for (int i = 1; i <= n; i++)
+                    {
+                        int tmptype = Int32.Parse(tmplist[i]);
+
+                        this.buildingRecipeList.Add(new building(cm, 0f, 0f, tmptype, this.buildingSamples[tmptype]));
+                    }
+                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return false;
             }

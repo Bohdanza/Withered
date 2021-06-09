@@ -171,7 +171,7 @@ namespace floating_island
                 {
                     if (currentRecipe1.type == currentRecipe.parentType && currentRecipe1.researched)
                     {
-                        if (currentRecipe.canBeResearched(researchPoints, x, y))
+                        if (!currentRecipe.researched && currentRecipe.canBeResearched(researchPoints, x, y))
                         {
                             currentRecipe.researched = true;
                             this.lastResearches.Add(currentRecipe);
