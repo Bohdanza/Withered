@@ -33,7 +33,7 @@ namespace floating_island
         private Texture2D crust;
         private Texture2D attentionDarkness, buildingMenuBackground, researchBackground;
 
-        private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose;
+        private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose, cancelButton;
 
         private bool buildingMenuClosed = true, researchMenuClosed = true;
         private int draw_l;
@@ -72,6 +72,10 @@ namespace floating_island
             tmptex = cm.Load<Texture2D>("cross0");
 
             this.researchMenuClose = new button(0, 1526, 19, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("cross1"));
+
+            tmptex = cm.Load<Texture2D>("backbutton0");
+
+            this.cancelButton = new button(0, 33, 33, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("backbutton1"));
 
             this.buildingMenuBackground = cm.Load<Texture2D>("buildingbackground");
             this.researchBackground = cm.Load<Texture2D>("evomenu");
@@ -620,12 +624,19 @@ namespace floating_island
                     this.selectedBuilding.update(cm, this, -1);
                     this.selectedBuilding.changeCoords(new Vector2(this.mx, this.my));
 
+                    this.cancelButton.update();
+
                     if (this.currentState.LeftButton == ButtonState.Pressed)
                     {
                         if (this.add_object(this.selectedBuilding))
                         {
                             this.selectedBuilding = null;
                         }
+                    }
+
+                    if (this.cancelButton.pressed)
+                    {
+                        this.selectedBuilding = null;
                     }
                 }
 
@@ -801,6 +812,10 @@ namespace floating_island
 
                     this.mainResearchTree.draw(spriteBatch, 800-this.mainResearchTree.width/2, 50);
                 }
+            }
+            else
+            {
+                this.cancelButton.draw(spriteBatch);
             }
         }
 
