@@ -137,13 +137,15 @@ namespace floating_island
                 this.researchPoints.Add(new ResearchPoint(cm, i, 0, tmpfont));
             }
 
+            this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2]));
+
             var rnd = new Random();
 
             int tmp_c = rnd.Next(0, 100);
 
             int tmp_count, l;
 
-            if (tmp_c >= 99)
+            if (tmp_c >= 0)
             {
                 //adding mountain
 
@@ -896,16 +898,18 @@ namespace floating_island
                 return false;
             }
 
-
             //checking hitboxes
 
             for (int i = 0; i < this.map_Objects.Count; i++)
             {
-                if (index_to_ignore!=i)
+                if (!(this.map_Objects[i].save_list()[0] == "#building" && ((building)this.map_Objects[i]).itemsToComplete.Count > 0))
                 {
-                    if (this.map_Objects[i].contains_point(point))
+                    if (index_to_ignore != i)
                     {
-                        return false;
+                        if (this.map_Objects[i].contains_point(point))
+                        {
+                            return false;
+                        }
                     }
                 }
             }

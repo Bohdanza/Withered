@@ -230,7 +230,7 @@ namespace floating_island
         {
             this.update_texture(cm, false);
         }
-
+        
         public override void draw(SpriteBatch spriteBatch, int x, int y)
         {
             int tmpw = this.textures[this.imgPhase].Width;
