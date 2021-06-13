@@ -93,6 +93,8 @@ namespace floating_island
 
             this.generate(0, cm);
 
+            this.add_object(new monster(cm, 0, 0.8f, 0.6f));
+
             this.timeSinceLastPress = 0;
         }
 

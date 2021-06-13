@@ -18,6 +18,8 @@ namespace floating_island
         public virtual int type { get; protected set; }
         public virtual Vector2 hitbox_left { get; protected set; }
         public virtual Vector2 hitbox_right { get; protected set; }
+        public virtual int hp { get; protected set; }
+        public virtual int maxhp { get; protected set; }
 
         public virtual void update(ContentManager cm, island my_island, int my_index)
         {
@@ -46,6 +48,11 @@ namespace floating_island
             this.y = newCoords.Y;
 
             return true;
+        }
+
+        public virtual void damage(int damage)
+        {
+            this.hp -= damage;
         }
     }
 }
