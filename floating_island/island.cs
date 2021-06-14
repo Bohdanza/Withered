@@ -29,6 +29,7 @@ namespace floating_island
         private List<plant> plant_samples = new List<plant>();
         private List<item> item_samples = new List<item>();
         private List<building> buildingSamples = new List<building>();
+        private List<monster> monsterSamples = new List<monster>();
 
         private Texture2D crust;
         private Texture2D attentionDarkness, buildingMenuBackground, researchBackground;
@@ -46,11 +47,12 @@ namespace floating_island
         private List<ResearchPoint> researchPoints = new List<ResearchPoint>();
         private researchTree mainResearchTree;
 
-        public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, string path)
+        public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, List<monster> monsterSamples, string path)
         {
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
+            this.monsterSamples = monsterSamples;
 
             this.draw_l = 1;
 
@@ -93,7 +95,7 @@ namespace floating_island
 
             this.generate(0, cm);
 
-            this.add_object(new monster(cm, 0, 0.8f, 0.6f));
+            this.add_object(new monster(cm, 0, 0.8f, 0.55f));
 
             this.timeSinceLastPress = 0;
         }
@@ -146,72 +148,6 @@ namespace floating_island
             int tmp_c = rnd.Next(0, 100);
 
             int tmp_count, l;
-
-            if (tmp_c >= 0)
-            {
-                //adding mountain
-
-                bool tmpb = true;
-
-                while (tmpb)
-                {
-                    float tmpx = (float)rnd.NextDouble();
-                    float tmpy = (float)rnd.NextDouble();
-
-                    if (this.add_object(new plant(cm, tmpx, tmpy, 5, 0, plant_samples[5])))
-                    {
-                        tmpb = false;
-                    }
-                }
-            }
-            else
-            {
-                //adding_hills
-
-                tmp_count = rnd.Next(1, 3);
-
-                l = 1;
-
-                for (int i = 0; i < tmp_count; i += l)
-                {
-                    l = 1;
-
-                    float tmpx = (float)rnd.NextDouble();
-                    float tmpy = (float)rnd.NextDouble();
-
-                    //its really important to add objects using this.add_object() because some necessary actions are done in that method 
-                    if (!this.add_object(new plant(cm, tmpx, tmpy, 3, 0, this.plant_samples[3])))
-                    {
-                        int tmp_rnd = rnd.Next(0, 10);
-
-                        if (tmp_rnd <= 6)
-                        {
-                            l = 0;
-                        }
-                    }
-                }
-
-                tmp_count = rnd.Next(1, 3);
-
-                for (int i = 0; i < tmp_count; i += l)
-                {
-                    l = 1;
-
-                    float tmpx = (float)rnd.NextDouble();
-                    float tmpy = (float)rnd.NextDouble();
-
-                    //its really important to add objects using this.add_object() because some necessary actions are done in that method 
-                    if (!this.add_object(new plant(cm, tmpx, tmpy, 4, 0, this.plant_samples[4])))
-                    {
-                        int tmp_rnd = rnd.Next(0, 10);
-
-                        if (tmp_rnd <= 6)
-                        {
-                            l = 0;
-                        }
-                    }
-                }
-            }
 
             //adding trees
             tmp_count = rnd.Next(1, 3);
@@ -484,6 +420,17 @@ namespace floating_island
 
                             this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList));
                         }
+                        else if(tmp_str_list[i] == "#monster")
+                        {
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 3]);
+                            int tmpHp = Int32.Parse(tmp_str_list[i + 4]);
+
+                            this.add_object(new monster(cm, tmp_x, tmp_y, tmpHp, this.monsterSamples[tmp_type]));
+
+                            i += 5;
+                        }
                     }
                 }
 
@@ -528,7 +475,7 @@ namespace floating_island
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
                 return false;
             }

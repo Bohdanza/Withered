@@ -18,6 +18,7 @@ namespace floating_island
         List<plant> sample_plant_list = new List<plant>();
         List<item> sample_item_list = new List<item>();
         List<building> sampleBuildings = new List<building>();
+        List<monster> sampleMonsters = new List<monster>();
 
         public game_world(ContentManager cm, string path)
         {
@@ -47,7 +48,12 @@ namespace floating_island
                 this.sampleBuildings.Add(new building(cm, 0f, 0f, i)); 
             }
 
-            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.sampleBuildings, this.path + @"islands\0");
+            for (int i = 0; i < 1; i++)
+            {
+                this.sampleMonsters.Add(new monster(cm, i, 0f, 0f));
+            }
+
+            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.sampleBuildings, this.sampleMonsters, this.path + @"islands\0");
         }
 
         public void update(ContentManager cm)

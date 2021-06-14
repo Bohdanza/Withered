@@ -23,6 +23,8 @@ namespace floating_island
         private int imgPhase;
         public string action { get; private set; }
         public string direction { get; private set; }
+        private float degDirection;
+        private int rotationProbability, rotationPower;
 
         /// <summary>
         /// Initializing with file reading. Full HP
@@ -45,10 +47,16 @@ namespace floating_island
                 this.maxhp = this.hp;
                 
                 this.speed = float.Parse(tmplist[1]);
+
+                this.rotationProbability = Int32.Parse(tmplist[2]);
+
+                this.rotationPower = Int32.Parse(tmplist[3]);
             }
 
             this.action = "no";
             this.direction = "s";
+
+            this.degDirection = 0f;
 
             this.update_texture(contentManager, true);
         }
@@ -73,6 +81,10 @@ namespace floating_island
                 this.maxhp = Int32.Parse(tmplist[0]);
 
                 this.speed = float.Parse(tmplist[1]);
+
+                this.rotationProbability = Int32.Parse(tmplist[2]);
+
+                this.rotationPower = Int32.Parse(tmplist[3]);
             }
 
             this.hp = hp;
@@ -88,6 +100,8 @@ namespace floating_island
 
             this.action = "no";
             this.direction = "s";
+
+            this.degDirection = 0f;
 
             this.update_texture(contentManager, true);
         }
@@ -111,6 +125,9 @@ namespace floating_island
 
             this.hp = hp;
 
+            this.rotationProbability = sampleMonster.rotationProbability;
+            this.rotationPower = sampleMonster.rotationPower;
+
             if (this.hp < 0)
             {
                 this.hp = 0;
@@ -123,12 +140,36 @@ namespace floating_island
             this.action = "no";
             this.direction = "s";
 
+            this.degDirection = 0f;
+
             this.update_texture(contentManager, true);
         }
 
         public override void update(ContentManager cm, island my_island, int my_index)
         {
-           
+            float px = this.x;
+            float py = this.y;
+
+            this.x += (float)Math.Cos(this.degDirection/180*Math.PI) * this.speed;
+            this.y += (float)Math.Sin(this.degDirection/180*Math.PI) * this.speed;
+
+            var rnd = new Random();
+
+            if (rnd.Next(0, 100) <= this.rotationProbability)
+            {
+                this.degDirection += rnd.Next(-this.rotationPower, this.rotationPower+1);
+            }
+
+            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
+            {
+                this.x = px;
+                this.y = py;
+
+                this.degDirection = (float)rnd.NextDouble() * 360f;
+            }
+
+            this.degDirection %= 360;
+
             this.update_texture(cm, false);       
         }
 
@@ -175,6 +216,7 @@ namespace floating_island
             List<string> tmplist = new List<string>();
 
             tmplist.Add("#monster");
+            tmplist.Add(this.type.ToString());
             tmplist.Add(this.x.ToString());
             tmplist.Add(this.y.ToString());
             tmplist.Add(this.hp.ToString());
