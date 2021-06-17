@@ -884,5 +884,75 @@ namespace floating_island
                 }
             }
         }
+        
+        /// <summary>
+        /// Getting the closest object
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="indexToIgnore"></param>
+        /// <returns>Closest object</returns>
+        public map_object getClosestObject(Vector2 point, int indexToIgnore)
+        {
+            float d = 100f;
+            int ind = -1;
+
+            for(int i=0; i<this.map_Objects.Count; i++)
+            {
+                if (i != indexToIgnore)
+                {
+                    float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
+
+                    if (d > d1)
+                    {
+                        d = d1;
+                        ind = i;
+                    }
+                }
+            }
+
+            try
+            {
+                return this.map_Objects[ind];
+            }
+            catch 
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Getting the closest object
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="indexToIgnore"></param>
+        /// <returns>Closest object</returns>
+        public map_object getClosestObject(Vector2 point, List<int> indexesToIgnore)
+        {
+            float d = 100f;
+            int ind = -1;
+
+            for (int i = 0; i < this.map_Objects.Count; i++)
+            {
+                if (!indexesToIgnore.Contains(i))
+                {
+                    float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
+
+                    if (d > d1)
+                    {
+                        d = d1;
+                        ind = i;
+                    }
+                }
+            }
+
+            try
+            {
+                return this.map_Objects[ind];
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

@@ -150,17 +150,34 @@ namespace floating_island
             float px = this.x;
             float py = this.y;
 
-            this.x += (float)Math.Cos(this.degDirection/180*Math.PI) * this.speed;
-            this.y += (float)Math.Sin(this.degDirection/180*Math.PI) * this.speed;
-
             var rnd = new Random();
 
-            if (rnd.Next(0, 100) <= this.rotationProbability)
+            if (this.action == "wa")
             {
-                this.degDirection += rnd.Next(-this.rotationPower, this.rotationPower+1);
+                this.x += (float)Math.Cos(this.degDirection / 180 * Math.PI) * this.speed;
+                this.y += (float)Math.Sin(this.degDirection / 180 * Math.PI) * this.speed;
+
+                if (rnd.Next(0, 100) <= this.rotationProbability)
+                {
+                    this.degDirection += rnd.Next(-this.rotationPower, this.rotationPower + 1);
+                }
             }
 
-            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
+            map_object tmpObject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index);
+
+            if (tmpObject.save_list()[0] == "#building")
+            {
+                if (tmpObject.contains_point(new Vector2(this.x, this.y)))
+                {
+                    this.action = "no";
+                }   
+            }
+            else
+            {
+                this.action = "wa";
+            }
+
+            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index) && tmpObject.save_list()[0] != "#building")
             {
                 this.x = px;
                 this.y = py;
