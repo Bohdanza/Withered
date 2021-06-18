@@ -185,7 +185,7 @@ namespace floating_island
         /// <param name="y"></param>
         /// <param name="type"></param>
         /// <param name="sampleBuilding"></param>
-        public building(ContentManager cm, float x, float y, int type, building sampleBuilding, List<item> itemsToComplete)
+        public building(ContentManager cm, float x, float y, int type, building sampleBuilding, List<item> itemsToComplete, int hp)
         {
             this.maxHpTex = cm.Load<Texture2D>("hpmax");
             this.minHpTex = cm.Load<Texture2D>("hpmin");

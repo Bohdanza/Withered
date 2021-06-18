@@ -103,6 +103,9 @@ namespace floating_island
         private void generate(int biome, ContentManager cm)
         {
             this.buildingRecipeList = new List<building>();
+            this.map_Objects = new List<map_object>();
+            this.buildingRecipeList = new List<building>();
+            this.researchPoints = new List<ResearchPoint>();
 
             for (int i = 0; i < 1; i++)
             {
@@ -407,9 +410,9 @@ namespace floating_island
                             int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
                             float tmp_x = float.Parse(tmp_str_list[i + 2]);
                             float tmp_y = float.Parse(tmp_str_list[i + 3]);
-                            int tmp_hp = Int32.Parse(tmp_str_list[i + 5]);
+                            int tmp_hp = Int32.Parse(tmp_str_list[i + 4]);
                                 
-                            int tmpn = Int32.Parse(tmp_str_list[i + 4]), z = i + 5;
+                            int tmpn = Int32.Parse(tmp_str_list[i + 5]), z = i + 5;
 
                             List<item> tmpItemList = new List<item>();
 
@@ -421,7 +424,7 @@ namespace floating_island
                                 tmpItemList.Add(new item(cm, 0f, 0f, tmp_type1, false, number, this.item_samples[tmp_type1]));
                             }
 
-                            this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList));
+                            this.add_object(new building(cm, tmp_x, tmp_y, tmp_type, this.buildingSamples[tmp_type], tmpItemList, tmp_hp));
                         }
                         else if(tmp_str_list[i] == "#monster")
                         {
