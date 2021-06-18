@@ -170,6 +170,7 @@ namespace floating_island
                 if (tmpObject.contains_point(new Vector2(this.x, this.y)))
                 {
                     this.action = "no";
+                    tmpObject.damage(1);
                 }   
             }
             else

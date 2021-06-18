@@ -20,6 +20,7 @@ namespace floating_island
         public virtual Vector2 hitbox_right { get; protected set; }
         public virtual int hp { get; protected set; }
         public virtual int maxhp { get; protected set; }
+        public virtual bool alive { get; protected set; } = true;
 
         public virtual void update(ContentManager cm, island my_island, int my_index)
         {

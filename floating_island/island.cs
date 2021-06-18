@@ -106,7 +106,7 @@ namespace floating_island
 
             for (int i = 0; i < 1; i++)
             {
-                this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i]));
+                this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i], buildingSamples[i].maxhp));
             }
 
             //initializing recipe tree
@@ -141,7 +141,7 @@ namespace floating_island
                 this.researchPoints.Add(new ResearchPoint(cm, i, 0, tmpfont));
             }
 
-            this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2]));
+            this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2], buildingSamples[2].maxhp));
 
             var rnd = new Random();
 
@@ -279,6 +279,8 @@ namespace floating_island
 
             using (StreamWriter sr = new StreamWriter(path + "map_objects"))
             {
+                sr.Flush();
+
                 foreach (var current_object in map_Objects)
                 {
                     var tmp_list = current_object.save_list();
@@ -405,8 +407,9 @@ namespace floating_island
                             int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
                             float tmp_x = float.Parse(tmp_str_list[i + 2]);
                             float tmp_y = float.Parse(tmp_str_list[i + 3]);
-
-                            int tmpn = Int32.Parse(tmp_str_list[i + 4]), z = i + 4;
+                            int tmp_hp = Int32.Parse(tmp_str_list[i + 5]);
+                                
+                            int tmpn = Int32.Parse(tmp_str_list[i + 4]), z = i + 5;
 
                             List<item> tmpItemList = new List<item>();
 
@@ -471,7 +474,7 @@ namespace floating_island
                     {
                         int tmptype = Int32.Parse(tmplist[i]);
 
-                        this.buildingRecipeList.Add(new building(cm, 0f, 0f, tmptype, this.buildingSamples[tmptype]));
+                        this.buildingRecipeList.Add(new building(cm, 0f, 0f, tmptype, this.buildingSamples[tmptype], buildingSamples[i].maxhp));
                     }
                 }
             }

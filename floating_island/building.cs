@@ -19,14 +19,19 @@ namespace floating_island
         public override Vector2 hitbox_left { get; protected set; }
         public override int type { get; protected set; }
 
+        private Texture2D maxHpTex, minHpTex;
+
         private int imgPhase, recipeImgPhase;
-        List<Texture2D> textures = new List<Texture2D>();
-        List<Texture2D> recipeTextures = new List<Texture2D>();
+        public List<Texture2D> textures { get; private set; } = new List<Texture2D>();
+        public List<Texture2D> recipeTextures { get; private set; } = new List<Texture2D>();
         public List<item> itemsToComplete { get; protected set; } = new List<item>();
         public List<Tuple<int, int>> researchPointsAdded { get; protected set; } = new List<Tuple<int, int>>();
+        public override int hp { get; protected set; }
+        public override int maxhp { get; protected set; }
+        public override bool alive { get; protected set; }
 
         /// <summary>
-        /// initializing with file reading
+        /// initializing with file reading, hp is filled to max
         /// </summary>
         /// <param name="cm"></param>
         /// <param name="x"></param>
@@ -34,6 +39,11 @@ namespace floating_island
         /// <param name="type"></param>
         public building(ContentManager cm, float x, float y, int type)
         {
+            this.maxHpTex = cm.Load<Texture2D>("hpmax");
+            this.minHpTex = cm.Load<Texture2D>("hpmin");
+
+            this.alive = true;
+
             this.x = x;
             this.y = y;
 
@@ -65,13 +75,16 @@ namespace floating_island
                 {
                     this.researchPointsAdded.Add(new Tuple<int, int>(Int32.Parse(tmp_list[currentInd]), Int32.Parse(tmp_list[currentInd + 1])));
                 }
+
+                this.maxhp = Int32.Parse(tmp_list[currentInd]);
+                this.hp = maxhp;
             }
 
             this.update_texture(cm, true);
         }
 
         /// <summary>
-        /// initializing with file reading, but without it for items
+        /// initializing with file reading, but without it for items, hp is filled to max
         /// </summary>
         /// <param name="cm"></param>
         /// <param name="x"></param>
@@ -80,6 +93,11 @@ namespace floating_island
         /// <param name="itemSamples"></param>
         public building(ContentManager cm, float x, float y, int type, List<item> itemSamples)
         {
+            this.maxHpTex = cm.Load<Texture2D>("hpmax");
+            this.minHpTex = cm.Load<Texture2D>("hpmin");
+
+            this.alive = true;
+
             this.x = x;
             this.y = y;
 
@@ -113,21 +131,29 @@ namespace floating_island
                 {
                     this.researchPointsAdded.Add(new Tuple<int, int>(Int32.Parse(tmp_list[currentInd]), Int32.Parse(tmp_list[currentInd + 1])));
                 }
+
+                this.maxhp = Int32.Parse(tmp_list[currentInd]);
+                this.hp = maxhp;
             }
 
             this.update_texture(cm, true);
         }
 
         /// <summary>
-        /// using sample
+        /// using sample, hp can be initialized
         /// </summary>
         /// <param name="cm"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="type"></param>
         /// <param name="sampleBuilding"></param>
-        public building(ContentManager cm, float x, float y, int type, building sampleBuilding)
+        public building(ContentManager cm, float x, float y, int type, building sampleBuilding, int hp)
         {
+            this.maxHpTex = cm.Load<Texture2D>("hpmax");
+            this.minHpTex = cm.Load<Texture2D>("hpmin");
+
+            this.alive = true;
+
             this.x = x;
             this.y = y;
 
@@ -143,13 +169,16 @@ namespace floating_island
                 this.itemsToComplete.Add(new item(cm, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
 
+            this.maxhp = sampleBuilding.maxhp;
+            this.hp = hp;
+
             this.researchPointsAdded = sampleBuilding.researchPointsAdded;
 
             this.update_texture(cm, true);
         }
-        
+
         /// <summary>
-        /// using sample and items to complete
+        /// using sample and items to complete, hp can be initialized
         /// </summary>
         /// <param name="cm"></param>
         /// <param name="x"></param>
@@ -158,6 +187,11 @@ namespace floating_island
         /// <param name="sampleBuilding"></param>
         public building(ContentManager cm, float x, float y, int type, building sampleBuilding, List<item> itemsToComplete)
         {
+            this.maxHpTex = cm.Load<Texture2D>("hpmax");
+            this.minHpTex = cm.Load<Texture2D>("hpmin");
+
+            this.alive = true;
+
             this.x = x;
             this.y = y;
 
@@ -174,6 +208,9 @@ namespace floating_island
             }
 
             this.researchPointsAdded = sampleBuilding.researchPointsAdded;
+
+            this.maxhp = sampleBuilding.maxhp;
+            this.hp = hp;
 
             this.update_texture(cm, true);
         }
@@ -237,6 +274,14 @@ namespace floating_island
             int tmph = this.textures[this.imgPhase].Height;
 
             spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
+
+            if(this.hp<this.maxhp)
+            {
+                float hpp = (float)hp / maxhp;
+
+                spriteBatch.Draw(minHpTex, new Vector2(x - minHpTex.Width / 2, y - tmph * 1.1f - minHpTex.Height), Color.White);
+                spriteBatch.Draw(maxHpTex, new Vector2(x - maxHpTex.Width / 2, y - tmph * 1.1f - maxHpTex.Height), new Rectangle(0, 0, (int)(maxHpTex.Width*hpp), maxHpTex.Height), Color.White);
+            }
         }
 
         public void drawAsRecipe(SpriteBatch spriteBatch, int x, int y)
@@ -292,6 +337,8 @@ namespace floating_island
             tmp_list.Add(this.type.ToString());
             tmp_list.Add(this.x.ToString());
             tmp_list.Add(this.y.ToString());
+            tmp_list.Add(this.hp.ToString());
+
             tmp_list.Add(this.itemsToComplete.Count.ToString());
             
             foreach(var currentItem in this.itemsToComplete)
@@ -314,6 +361,22 @@ namespace floating_island
             }
 
             return false;
+        }
+
+        public override void damage(int damage)
+        {
+            this.hp -= damage;
+
+            if(this.hp<=0)
+            {
+                this.hp = 0;
+                this.alive = false;
+            }
+
+            if(this.hp>this.maxhp)
+            {
+                this.hp = this.maxhp;
+            }
         }
 
         //later i'll add defence against stupid here 
