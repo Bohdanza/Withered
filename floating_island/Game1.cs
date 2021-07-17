@@ -78,7 +78,7 @@ namespace floating_island
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.LightSeaGreen);
+            GraphicsDevice.Clear(Color.LightSkyBlue);
 
             _spriteBatch.Begin();
 

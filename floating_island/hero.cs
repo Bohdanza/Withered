@@ -100,7 +100,7 @@ namespace floating_island
             }
 
             //We need this list, just trust me
-            ///I'm just to lazy to write why
+            //I'm just to lazy to write why
             List<item> discoveredItems = new List<item>();
             List<item> neededItems = new List<item>();
 
@@ -252,7 +252,7 @@ namespace floating_island
             }
         }
 
-        //!!! TO SLOW, MUST BE CHANGED !!!
+        //!!! TOO SLOW, MUST BE CHANGED !!!
         private string find_path(float x, float y, float dx, float dy, float speed, island my_island, int index_to_ignore, int indexToIgnore2)
         {
             List<Tuple<Vector2, string>> current = new List<Tuple<Vector2, string>>();

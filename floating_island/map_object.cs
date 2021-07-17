@@ -55,5 +55,36 @@ namespace floating_island
         {
             this.hp -= damage;
         }
+
+        /// <summary>
+        /// Get distance from given point without ignoring hitboxex
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public virtual float getSmallestDist(float x, float y)
+        {
+            float tmpx, tmpy;
+
+            if(x<this.x)
+            {
+                tmpx = Math.Abs(this.x + this.hitbox_left.X - x);
+            }
+            else
+            {
+                tmpx = Math.Abs(x - this.x - this.hitbox_right.X);
+            }
+
+            if (y < this.y)
+            {
+                tmpy = Math.Abs(this.y + this.hitbox_left.Y - y);
+            }
+            else
+            {
+                tmpy = Math.Abs(y - this.y - this.hitbox_right.Y);
+            }
+
+            return (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
+        }
     }
 }

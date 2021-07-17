@@ -13,6 +13,12 @@ namespace floating_island
 {
     public class island
     {
+        public const int crustWidth = 938;
+        public const int crustHeight = 675;
+        
+        public const int crustXPos = 331;
+        public const int crustYPos = 195;
+        
         public float radius { get; private set; }
 
         public MouseState currentState { get; private set; }
@@ -148,88 +154,27 @@ namespace floating_island
 
             var rnd = new Random();
 
-            int tmp_c = rnd.Next(0, 100);
+            //adding items
+            int tmp_c = rnd.Next(5, 7);
+            int c = 0;
+
+            while (c < tmp_c)
+            {
+                float tmpx = (float)rnd.NextDouble();
+                float tmpy = (float)rnd.NextDouble();
+
+                if (this.add_object(new item(cm, tmpx, tmpy, 0, true, 1, item_samples[0])))
+                {
+                    c++;
+                }
+            }
 
             int tmp_count, l;
 
-            //adding trees
-            tmp_count = rnd.Next(1, 3);
-
-            int t_c = 0;
-
-            for (int i = 0; i < tmp_count; i += l)
-            {
-                l = 1;
-
-                float tmpx = (float)rnd.NextDouble();
-                float tmpy = (float)rnd.NextDouble();
-
-                //its really important to add objects using this.add_object() because some necessary actions are done in that method 
-                if (!this.add_object(new plant(cm, tmpx, tmpy, 0, 0, this.plant_samples[0])))
-                {
-                    int tmp_rnd = rnd.Next(0, 10);
-
-                    if (tmp_rnd <= 6)
-                    {
-                        l = 0;
-                    }
-                }
-                else
-                {
-                    t_c++;
-                }
-            }
-
-            tmp_count = rnd.Next(1, 3);
-
-            for (int i = 0; i < tmp_count; i += l)
-            {
-                l = 1;
-
-                float tmpx = (float)rnd.NextDouble();
-                float tmpy = (float)rnd.NextDouble();
-
-                //its really important to add objects using this.add_object() because some necessary actions are done in that method 
-                if (!this.add_object(new plant(cm, tmpx, tmpy, 1, 0, this.plant_samples[1])))
-                {
-                    int tmp_rnd = rnd.Next(0, 10);
-
-                    if (tmp_rnd <= 6)
-                    {
-                        l = 0;
-                    }
-                }
-                else
-                {
-                    t_c++;
-                }
-            }
-
-            tmp_count = (int)((rnd.NextDouble() + 0.1f) * 3 * t_c);
-
-            for (int i = 0; i < tmp_count; i += l)
-            {
-                l = 1;
-
-                float tmpx = (float)rnd.NextDouble();
-                float tmpy = (float)rnd.NextDouble();
-
-                //its really important to add objects using this.add_object() because some necessary actions are done in that method 
-                if (!this.add_object(new item(cm, tmpx, tmpy, 0, true, 1, item_samples[0])))
-                {
-                    int tmp_rnd = rnd.Next(0, 10);
-
-                    if (tmp_rnd <= 6)
-                    {
-                        l = 0;
-                    }
-                }
-            }
-
             //adding heroes
-            int c = 0;
+            c = 0;
 
-            while (c < 3)
+            while (c < 5)
             {
                 float tmpx = (float)rnd.NextDouble();
                 float tmpy = (float)rnd.NextDouble();
@@ -437,6 +382,21 @@ namespace floating_island
 
                             i += 5;
                         }
+                        else if (tmp_str_list[i] == "#bullet")
+                        {
+                            int tmp_type = Int32.Parse(tmp_str_list[i + 1]);
+                            float tmp_x = float.Parse(tmp_str_list[i + 2]);
+                            float tmp_y = float.Parse(tmp_str_list[i + 3]);
+                            float tmpdir = float.Parse(tmp_str_list[i + 4]);
+
+                            this.add_object(new bullet(cm, tmp_type, tmp_x, tmp_y, tmpdir));
+
+                            i += 5;
+                        }
+                        else
+                        {
+                            i++;
+                        }
                     }
                 }
 
@@ -499,11 +459,16 @@ namespace floating_island
                 this.ticks = 0;
             }
 
+            if(this.ticks%300 == 0)
+            {
+                this.add_object(new bullet(cm, 0, 0.6f, 0.6f, 90));
+            }
+            
             //getting mouse cursor position and converting it into island coords
             this.currentState = Mouse.GetState();
 
-            this.mx = (float)(this.currentState.X - 316 - this.draw_x) / 966;
-            this.my = (float)(this.currentState.Y - 182 - this.draw_y) / 696;
+            this.mx = (float)(this.currentState.X - crustXPos - this.draw_x) / crustWidth;
+            this.my = (float)(this.currentState.Y - crustYPos - this.draw_y) / crustHeight;
 
             if (this.selectedBuilding == null && this.researchMenuClosed)
             {
@@ -619,6 +584,11 @@ namespace floating_island
                     l = 1;
 
                     this.map_Objects[i].update(cm, this, i);
+                    
+                    if(!this.map_Objects[i].alive)
+                    {
+                        this.delete_object(i);
+                    }
 
                     if (this.map_Objects.Count < pc)
                     {
@@ -708,15 +678,15 @@ namespace floating_island
             //drawing map objects
             foreach (var current_object in this.map_Objects)
             {
-                int draw_x = (int)(316 + this.draw_x + current_object.x * 966);
-                int draw_y = (int)(183 + this.draw_y + current_object.y * 686);
+                int draw_x = (int)(crustXPos + this.draw_x + current_object.x * crustWidth);
+                int draw_y = (int)(crustYPos + this.draw_y + current_object.y * crustHeight);
 
                 current_object.draw(spriteBatch, draw_x, draw_y);
             }
 
             if (this.selectedBuilding != null)
             {
-                this.selectedBuilding.draw(spriteBatch, (int)(316 + this.draw_x + this.selectedBuilding.x * 966), (int)(183 + this.draw_y + this.selectedBuilding.y * 686));
+                this.selectedBuilding.draw(spriteBatch, (int)(crustXPos + this.draw_x + this.selectedBuilding.x * crustWidth), (int)(crustYPos + this.draw_y + this.selectedBuilding.y * crustHeight));
             }
 
             //drawing some effects

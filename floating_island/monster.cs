@@ -25,6 +25,9 @@ namespace floating_island
         public string direction { get; private set; }
         private float degDirection;
         private int rotationProbability, rotationPower;
+        public int attackSpeed { get; private set; }
+        public int attackPower { get; private set; }
+        private int timeSinceLastAttack = 0;
 
         /// <summary>
         /// Initializing with file reading. Full HP
@@ -51,6 +54,9 @@ namespace floating_island
                 this.rotationProbability = Int32.Parse(tmplist[2]);
 
                 this.rotationPower = Int32.Parse(tmplist[3]);
+
+                this.attackSpeed = Int32.Parse(tmplist[4]);
+                this.attackPower = Int32.Parse(tmplist[5]);
             }
 
             this.action = "no";
@@ -85,6 +91,9 @@ namespace floating_island
                 this.rotationProbability = Int32.Parse(tmplist[2]);
 
                 this.rotationPower = Int32.Parse(tmplist[3]);
+
+                this.attackSpeed = Int32.Parse(tmplist[4]);
+                this.attackPower = Int32.Parse(tmplist[5]);
             }
 
             this.hp = hp;
@@ -128,6 +137,9 @@ namespace floating_island
             this.rotationProbability = sampleMonster.rotationProbability;
             this.rotationPower = sampleMonster.rotationPower;
 
+            this.attackSpeed = sampleMonster.attackSpeed;
+            this.attackPower = sampleMonster.attackPower;
+
             if (this.hp < 0)
             {
                 this.hp = 0;
@@ -147,6 +159,8 @@ namespace floating_island
 
         public override void update(ContentManager cm, island my_island, int my_index)
         {
+            this.timeSinceLastAttack++;
+
             float px = this.x;
             float py = this.y;
 
@@ -165,12 +179,17 @@ namespace floating_island
 
             map_object tmpObject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index);
 
-            if (tmpObject.save_list()[0] == "#building")
+            if (tmpObject.save_list()[0] == "#building" && ((building)tmpObject).itemsToComplete.Count<=0)
             {
-                if (tmpObject.contains_point(new Vector2(this.x, this.y)))
+                if (tmpObject.getSmallestDist(this.x, this.y)<=this.speed*3f)
                 {
                     this.action = "no";
-                    tmpObject.damage(1);
+                    
+                    if(this.timeSinceLastAttack>=this.attackSpeed)
+                    {
+                        tmpObject.damage(this.attackPower);
+                        this.timeSinceLastAttack = 0;
+                    }
                 }   
             }
             else
@@ -178,7 +197,7 @@ namespace floating_island
                 this.action = "wa";
             }
 
-            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index) && tmpObject.save_list()[0] != "#building")
+            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
             {
                 this.x = px;
                 this.y = py;
