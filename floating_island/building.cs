@@ -325,26 +325,29 @@ namespace floating_island
 
         public override void update(ContentManager cm, island my_island, int my_index)
         {
-            var rnd = new Random();
-
-            int tmpint = rnd.Next(0, 10000);
-
-            foreach(var currentItem in this.itemsProduction)
+            if (this.itemsToComplete.Count <= 0)
             {
-                if(currentItem.Item1>=tmpint)
+                var rnd = new Random();
+
+                int tmpint = rnd.Next(0, 10000);
+
+                foreach (var currentItem in this.itemsProduction)
                 {
-                    if(!my_island.add_object(new item(cm, this.x + this.hitbox_left.X-0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                    if (currentItem.Item1 >= tmpint)
                     {
-                        if (!my_island.add_object(new item(cm, this.x + this.hitbox_right.X+0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
-                        { 
-                            if (!my_island.add_object(new item(cm, this.x, this.y-this.hitbox_left.Y-0.05f, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                        if (!my_island.add_object(new item(cm, this.x + this.hitbox_left.X - 0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                        {
+                            if (!my_island.add_object(new item(cm, this.x + this.hitbox_right.X + 0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
                             {
-                                my_island.add_object(new item(cm, this.x, this.y - this.hitbox_right.Y+0.05f, currentItem.Item2.type, true, 1, currentItem.Item2));
+                                if (!my_island.add_object(new item(cm, this.x, this.y - this.hitbox_left.Y - 0.05f, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                                {
+                                    my_island.add_object(new item(cm, this.x, this.y - this.hitbox_right.Y + 0.05f, currentItem.Item2.type, true, 1, currentItem.Item2));
+                                }
                             }
                         }
                     }
                 }
-            }    
+            }
 
             this.update_texture(cm, false);
         }
