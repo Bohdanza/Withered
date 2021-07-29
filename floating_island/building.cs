@@ -29,6 +29,7 @@ namespace floating_island
         public override int hp { get; protected set; }
         public override int maxhp { get; protected set; }
         public override bool alive { get; protected set; }
+        public override bool drawUnderOther { get; protected set; }
 
         /// <summary>
         /// initializing with file reading, hp is filled to max
@@ -78,6 +79,10 @@ namespace floating_island
 
                 this.maxhp = Int32.Parse(tmp_list[currentInd]);
                 this.hp = maxhp;
+
+                currentInd++;
+
+                this.drawUnderOther = bool.Parse(tmp_list[currentInd]);
             }
 
             this.update_texture(cm, true);
@@ -134,6 +139,10 @@ namespace floating_island
 
                 this.maxhp = Int32.Parse(tmp_list[currentInd]);
                 this.hp = maxhp;
+
+                currentInd++;
+
+                this.drawUnderOther = bool.Parse(tmp_list[currentInd]);
             }
 
             this.update_texture(cm, true);
@@ -153,6 +162,8 @@ namespace floating_island
             this.minHpTex = cm.Load<Texture2D>("hpmin");
 
             this.alive = true;
+
+            this.drawUnderOther = sampleBuilding.drawUnderOther;
 
             this.x = x;
             this.y = y;
@@ -191,6 +202,8 @@ namespace floating_island
             this.minHpTex = cm.Load<Texture2D>("hpmin");
 
             this.alive = true;
+
+            this.drawUnderOther = sampleBuilding.drawUnderOther;
 
             this.x = x;
             this.y = y;

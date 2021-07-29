@@ -22,6 +22,9 @@ namespace floating_island
         public virtual int maxhp { get; protected set; }
         public virtual bool alive { get; protected set; } = true;
 
+        //shows if object must be drawn under other objects
+        public virtual bool drawUnderOther { get; protected set; } = false;
+
         public virtual void update(ContentManager cm, island my_island, int my_index)
         {
 

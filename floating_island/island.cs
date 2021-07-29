@@ -13,11 +13,11 @@ namespace floating_island
 {
     public class island
     {
-        public const int crustWidth = 938;
-        public const int crustHeight = 675;
+        public const int crustWidth = 825;
+        public const int crustHeight = 572;
         
-        public const int crustXPos = 331;
-        public const int crustYPos = 195;
+        public const int crustXPos = 386;
+        public const int crustYPos = 228;
         
         public float radius { get; private set; }
 
@@ -145,19 +145,20 @@ namespace floating_island
             //------
             var tmpfont = cm.Load<SpriteFont>("pointsFont");
 
-            for(int i=0; i<2; i++)
+            for(int i=0; i<1; i++)
             {
                 this.researchPoints.Add(new ResearchPoint(cm, i, 0, tmpfont));
             }
 
             this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2], buildingSamples[2].maxhp));
+            this.add_object(new building(cm, 0.225f, 0.225f, 3, this.buildingSamples[3], buildingSamples[3].maxhp));
 
             var rnd = new Random();
 
             //adding items
             int tmp_c = rnd.Next(5, 7);
             int c = 0;
-
+            
             while (c < tmp_c)
             {
                 float tmpx = (float)rnd.NextDouble();
@@ -174,7 +175,7 @@ namespace floating_island
             //adding heroes
             c = 0;
 
-            while (c < 5)
+            while (c < 1)
             {
                 float tmpx = (float)rnd.NextDouble();
                 float tmpy = (float)rnd.NextDouble();
@@ -457,7 +458,7 @@ namespace floating_island
             if(this.ticks>=1000000)
             {
                 this.ticks = 0;
-            }
+            }    
 
             if(this.ticks%300 == 0)
             {
@@ -588,6 +589,7 @@ namespace floating_island
                     if(!this.map_Objects[i].alive)
                     {
                         this.delete_object(i);
+                        l = 0;
                     }
 
                     if (this.map_Objects.Count < pc)
@@ -675,15 +677,31 @@ namespace floating_island
         {
             spriteBatch.Draw(crust, new Vector2(this.draw_x, this.draw_y), Color.White);
 
-            //drawing map objects
+            //drawing first layer map objects
             foreach (var current_object in this.map_Objects)
             {
-                int draw_x = (int)(crustXPos + this.draw_x + current_object.x * crustWidth);
-                int draw_y = (int)(crustYPos + this.draw_y + current_object.y * crustHeight);
+                if (current_object.drawUnderOther)
+                {
+                    int draw_x = (int)(crustXPos + this.draw_x + current_object.x * crustWidth);
+                    int draw_y = (int)(crustYPos + this.draw_y + current_object.y * crustHeight);
 
-                current_object.draw(spriteBatch, draw_x, draw_y);
+                    current_object.draw(spriteBatch, draw_x, draw_y);
+                }
             }
 
+            //drawing second layer map objects
+            foreach (var current_object in this.map_Objects)
+            {
+                if (!current_object.drawUnderOther)
+                {
+                    int draw_x = (int)(crustXPos + this.draw_x + current_object.x * crustWidth);
+                    int draw_y = (int)(crustYPos + this.draw_y + current_object.y * crustHeight);
+
+                    current_object.draw(spriteBatch, draw_x, draw_y);
+                }
+            }
+
+            //drawing building that is selected and could be builded
             if (this.selectedBuilding != null)
             {
                 this.selectedBuilding.draw(spriteBatch, (int)(crustXPos + this.draw_x + this.selectedBuilding.x * crustWidth), (int)(crustYPos + this.draw_y + this.selectedBuilding.y * crustHeight));
