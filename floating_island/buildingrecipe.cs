@@ -91,7 +91,7 @@ namespace floating_island
                 }
             }
         }
-
+        
         public bool canBeResearched(List<ResearchPoint> researchPoints)
         {
             var mouseState = Mouse.GetState();

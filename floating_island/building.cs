@@ -30,6 +30,7 @@ namespace floating_island
         public override int maxhp { get; protected set; }
         public override bool alive { get; protected set; }
         public override bool drawUnderOther { get; protected set; }
+        public List<Tuple<int, item>> itemsProduction { get; protected set; }
 
         /// <summary>
         /// initializing with file reading, hp is filled to max
@@ -83,6 +84,21 @@ namespace floating_island
                 currentInd++;
 
                 this.drawUnderOther = bool.Parse(tmp_list[currentInd]);
+
+                currentInd++;
+
+                tmpint = Int32.Parse(tmp_list[currentInd]) * 2 + currentInd;
+
+                this.itemsProduction = new List<Tuple<int, item>>();
+
+                //production list initializing
+                for(currentInd=currentInd+1; currentInd<=tmpint; currentInd+=2)
+                {
+                    item tmpitem = new item(cm, 0f, 0f, Int32.Parse(tmp_list[currentInd]), true, 1);
+                    int tmpProbability = Int32.Parse(tmp_list[currentInd + 1]);
+
+                    this.itemsProduction.Add(new Tuple<int, item>(tmpProbability, tmpitem));
+                }
             }
 
             this.update_texture(cm, true);
@@ -143,6 +159,23 @@ namespace floating_island
                 currentInd++;
 
                 this.drawUnderOther = bool.Parse(tmp_list[currentInd]);
+                
+                currentInd++;
+
+                tmpint = Int32.Parse(tmp_list[currentInd]) * 2 + currentInd;
+
+                this.itemsProduction = new List<Tuple<int, item>>();
+
+                //production list initializing
+                for (currentInd = currentInd + 1; currentInd <= tmpint; currentInd += 2)
+                {
+                    int tmptype = Int32.Parse(tmp_list[currentInd]);
+
+                    item tmpitem = new item(cm, 0f, 0f, tmptype, true, 1, itemSamples[tmptype]);
+                    int tmpProbability = Int32.Parse(tmp_list[currentInd + 1]);
+
+                    this.itemsProduction.Add(new Tuple<int, item>(tmpProbability, tmpitem));
+                }
             }
 
             this.update_texture(cm, true);
@@ -185,6 +218,13 @@ namespace floating_island
 
             this.researchPointsAdded = sampleBuilding.researchPointsAdded;
 
+            this.itemsProduction = new List<Tuple<int, item>>();
+
+            foreach (var currentItem in sampleBuilding.itemsProduction)
+            {
+                this.itemsProduction.Add(new Tuple<int, item>(currentItem.Item1, new item(cm, 0f, 0f, currentItem.Item2.type, true, 1, currentItem.Item2)));
+            }
+            
             this.update_texture(cm, true);
         }
 
@@ -224,6 +264,13 @@ namespace floating_island
 
             this.maxhp = sampleBuilding.maxhp;
             this.hp = hp;
+
+            this.itemsProduction = new List<Tuple<int, item>>();
+
+            foreach (var currentItem in sampleBuilding.itemsProduction)
+            {
+                this.itemsProduction.Add(new Tuple<int, item>(currentItem.Item1, new item(cm, 0f, 0f, currentItem.Item2.type, true, 1, currentItem.Item2)));
+            }
 
             this.update_texture(cm, true);
         }
@@ -278,6 +325,27 @@ namespace floating_island
 
         public override void update(ContentManager cm, island my_island, int my_index)
         {
+            var rnd = new Random();
+
+            int tmpint = rnd.Next(0, 10000);
+
+            foreach(var currentItem in this.itemsProduction)
+            {
+                if(currentItem.Item1>=tmpint)
+                {
+                    if(!my_island.add_object(new item(cm, this.x + this.hitbox_left.X-0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                    {
+                        if (!my_island.add_object(new item(cm, this.x + this.hitbox_right.X+0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                        { 
+                            if (!my_island.add_object(new item(cm, this.x, this.y-this.hitbox_left.Y-0.05f, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                            {
+                                my_island.add_object(new item(cm, this.x, this.y - this.hitbox_right.Y+0.05f, currentItem.Item2.type, true, 1, currentItem.Item2));
+                            }
+                        }
+                    }
+                }
+            }    
+
             this.update_texture(cm, false);
         }
         
