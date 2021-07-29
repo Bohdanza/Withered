@@ -70,7 +70,7 @@ namespace floating_island
 
                 tmpint = currentInd + tmpint * 2;
 
-                //reading researchpoints
+                //reading researchpoints added
                 //first is type, second is amount
                 for(currentInd = currentInd+1; currentInd<tmpint; currentInd+=2)
                 {
