@@ -21,6 +21,8 @@ namespace floating_island
         private int damagePower, imgPhase;
         private float degDirection;
         public float speed { get; private set; }
+        public int indexToIgnore=-1;
+        public float rad { get; private set; }
 
         /// <summary>
         /// Initializing with file reading
@@ -46,6 +48,8 @@ namespace floating_island
 
                 this.damagePower = Int32.Parse(tmpList[0]);
                 this.speed = float.Parse(tmpList[1]);
+
+                this.rad = float.Parse(tmpList[2]);
             }
 
             this.updateTexture(cm, true);
@@ -74,8 +78,11 @@ namespace floating_island
 
             this.speed = sampleBullet.speed;
 
+            this.rad = sampleBullet.rad;
+
             this.updateTexture(cm, true);
         }
+
         private void updateTexture(ContentManager cm, bool somethingChanged)
         {
             if(somethingChanged)
@@ -102,26 +109,30 @@ namespace floating_island
                 }
             }    
         }
+        
         public override void update(ContentManager cm, island my_island, int my_index)
         {
             this.x += (float)Math.Cos(this.degDirection / 180 * Math.PI) * this.speed;
             this.y += (float)Math.Sin(this.degDirection / 180 * Math.PI) * this.speed;
 
-            /*if (my_island.get_dist(0.5f, 0.5f, this.x, this.y)>1f)
+            if (my_island.get_dist(0.5f, 0.5f, this.x, this.y)>1f)
             {
                 this.alive = false;
             }
             else
             {
-                if(!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
+                map_object tmpobject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index);
+
+                if (my_island.get_dist(x, y, tmpobject.x, tmpobject.y) <= this.rad)
                 {
-                    my_island.getClosestObject(new Vector2(this.x, this.y), my_index).damage(this.damagePower);
                     this.alive = false;
+                    tmpobject.damage(this.damagePower);
                 }
-            }*/
+            }
 
             this.updateTexture(cm, false);
         }
+        
         public override void draw(SpriteBatch spriteBatch, int x, int y)
         {
             spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x, y), Color.White);

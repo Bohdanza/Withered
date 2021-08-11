@@ -23,9 +23,10 @@ namespace floating_island
         private Texture2D background;
         private Texture2D texture;
         public bool researched;
-        public List<int> researchPointsNeeded = new List<int>();
+        public List<ResearchPoint> researchPointsNeeded = new List<ResearchPoint>();
         public int x = 0, y = 0;
         private MouseState oldState = Mouse.GetState();
+        private int pointDrawCoords=0;
 
         public researchRecipe(ContentManager cm, int type, bool researched, int parentType)
         { 
@@ -41,22 +42,21 @@ namespace floating_island
             {
                 List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
 
-                for(int i=0; i<3; i++)
+                int tmpn = Int32.Parse(tmplist[0].Trim('\n').Trim('\r'));
+
+                for(int i=1; i<tmpn*2; i++)
                 {
-                    try
-                    {
-                        this.researchPointsNeeded.Add(Int32.Parse(tmplist[i].Trim('\n').Trim('\r')));
-                    }
-                    catch(Exception e)
-                    {
-                        this.researchPointsNeeded.Add(1);
-                    }
+                    int tmptype = Int32.Parse(tmplist[i].Trim('\n').Trim('\r'));
+                    int tmpcount = Int32.Parse(tmplist[i + 1].Trim('\n').Trim('\r'));
+
+                    this.researchPointsNeeded.Add(new ResearchPoint(cm, tmptype, tmpcount, null));
                 }
 
-                int tmpn = Int32.Parse(tmplist[3].Trim('\n').Trim('\r'));
-                int currentStr;
+                int currentStr=tmpn*2+1;
 
-                for(currentStr=4; currentStr<4+tmpn; currentStr++)
+                tmpn = Int32.Parse(tmplist[currentStr].Trim('\n').Trim('\r'))+currentStr;
+
+                for (currentStr=currentStr+1; currentStr<=tmpn; currentStr++)
                 {
                     this.addedBuildings.Add(new building(cm, 0f, 0f, Int32.Parse(tmplist[currentStr].Trim('\n').Trim('\r'))));
                 }
@@ -78,14 +78,49 @@ namespace floating_island
             else
             {
                 Rectangle tmprect = new Rectangle(this.x + x, this.y + y, 87, 87);
+                
+                int i = 0;
 
-                if (oldState.LeftButton == ButtonState.Pressed && tmprect.Contains(oldState.X, oldState.Y))
+                foreach (var currentPoint in this.researchPointsNeeded)
                 {
-                    spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
-                    spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
+                    if (currentPoint.amount > 0)
+                    {
+                        if (this.x + x + this.pointDrawCoords + i >= this.x + x + this.texture.Width)
+                        {
+                            currentPoint.drawForRecipe(spriteBatch, this.x + x + this.pointDrawCoords + i, this.y + y);
+                        }
+
+                        i += (int)currentPoint.getDrawRect().X;
+                    }
+                }
+
+                if (tmprect.Contains(oldState.X, oldState.Y))
+                {
+                    if(this.pointDrawCoords<this.texture.Width*1.1f)
+                    {
+                        this.pointDrawCoords += 7;
+                    }
+
+                    if (oldState.LeftButton == ButtonState.Pressed)
+                    {
+                        spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
+                        spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(150, 150, 150));
+                    }
+                    else
+                    {
+                        //a bit shity
+                        //must be fixed
+                        spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                        spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
+                    }
                 }
                 else
                 {
+                    if (this.pointDrawCoords > 0)
+                    {
+                        this.pointDrawCoords -= 7;
+                    }
+
                     spriteBatch.Draw(this.background, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
                     spriteBatch.Draw(this.texture, new Vector2(this.x + x, this.y + y), new Color(175, 175, 175));
                 }
@@ -102,19 +137,22 @@ namespace floating_island
                 return false;
             }
 
-            List<int> tmplist = this.researchPointsNeeded;
+            List<ResearchPoint> tmplist = this.researchPointsNeeded;
 
             foreach(var currentPoint in researchPoints)
             {
-                if(currentPoint.type < tmplist.Count)
+                foreach(var currentPoint1 in tmplist)
                 {
-                    tmplist[currentPoint.type] -= currentPoint.amount;
+                    if(currentPoint1.type==currentPoint.type)
+                    {
+                        currentPoint1.amount -= currentPoint.amount;
+                    }
                 }
             }
 
             foreach(var currentPoint in tmplist)
             {
-                if (currentPoint > 0)
+                if (currentPoint.amount > 0)
                 {
                     return false;
                 }
@@ -135,19 +173,22 @@ namespace floating_island
                     return false;
                 }
 
-                List<int> tmplist = this.researchPointsNeeded;
+                List<ResearchPoint> tmplist = this.researchPointsNeeded;
 
                 foreach (var currentPoint in researchPoints)
                 {
-                    if (currentPoint.type < tmplist.Count)
+                    foreach (var currentPoint1 in tmplist)
                     {
-                        tmplist[currentPoint.type] -= currentPoint.amount;
+                        if (currentPoint1.type == currentPoint.type)
+                        {
+                            currentPoint1.amount -= currentPoint.amount;
+                        }
                     }
                 }
 
                 foreach (var currentPoint in tmplist)
                 {
-                    if (currentPoint > 0)
+                    if (currentPoint.amount > 0)
                     {
                         return false;
                     }

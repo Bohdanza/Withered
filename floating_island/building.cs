@@ -31,6 +31,10 @@ namespace floating_island
         public override bool alive { get; protected set; }
         public override bool drawUnderOther { get; protected set; }
         public List<Tuple<int, item>> itemsProduction { get; protected set; }
+        public bool isTurret { get; private set; }
+        public bullet bulletShooting;
+        public int speed { get; private set; }
+        public int timeSinceLastAttack { get; private set; } = 0;
 
         /// <summary>
         /// initializing with file reading, hp is filled to max
@@ -98,6 +102,20 @@ namespace floating_island
                     int tmpProbability = Int32.Parse(tmp_list[currentInd + 1]);
 
                     this.itemsProduction.Add(new Tuple<int, item>(tmpProbability, tmpitem));
+                }
+
+                //Turret
+                this.isTurret = bool.Parse(tmp_list[currentInd]);
+
+                if (this.isTurret)
+                {
+                    currentInd++;
+
+                    this.bulletShooting = new bullet(cm, Int32.Parse(tmp_list[currentInd]), 0f, 0f, 0f);
+
+                    currentInd++;
+
+                    this.speed = Int32.Parse(tmp_list[currentInd]);
                 }
             }
 
@@ -176,6 +194,20 @@ namespace floating_island
 
                     this.itemsProduction.Add(new Tuple<int, item>(tmpProbability, tmpitem));
                 }
+
+                //Turret
+                this.isTurret = bool.Parse(tmp_list[currentInd]);
+
+                if (this.isTurret)
+                {
+                    currentInd++;
+
+                    this.bulletShooting = new bullet(cm, Int32.Parse(tmp_list[currentInd]), 0f, 0f, 0f);
+
+                    currentInd++;
+
+                    this.speed = Int32.Parse(tmp_list[currentInd]);
+                }
             }
 
             this.update_texture(cm, true);
@@ -224,7 +256,16 @@ namespace floating_island
             {
                 this.itemsProduction.Add(new Tuple<int, item>(currentItem.Item1, new item(cm, 0f, 0f, currentItem.Item2.type, true, 1, currentItem.Item2)));
             }
-            
+
+            this.isTurret = sampleBuilding.isTurret;
+
+            if(this.isTurret)
+            {
+                this.bulletShooting = sampleBuilding.bulletShooting;
+
+                this.speed = sampleBuilding.speed;
+            }
+
             this.update_texture(cm, true);
         }
 
@@ -270,6 +311,15 @@ namespace floating_island
             foreach (var currentItem in sampleBuilding.itemsProduction)
             {
                 this.itemsProduction.Add(new Tuple<int, item>(currentItem.Item1, new item(cm, 0f, 0f, currentItem.Item2.type, true, 1, currentItem.Item2)));
+            }
+
+            this.isTurret = sampleBuilding.isTurret;
+
+            if (this.isTurret)
+            {
+                this.bulletShooting = sampleBuilding.bulletShooting;
+
+                this.speed = sampleBuilding.speed;
             }
 
             this.update_texture(cm, true);
@@ -331,18 +381,69 @@ namespace floating_island
 
                 int tmpint = rnd.Next(0, 10000);
 
+                //production
                 foreach (var currentItem in this.itemsProduction)
                 {
                     if (currentItem.Item1 >= tmpint)
                     {
-                        if (!my_island.add_object(new item(cm, this.x + this.hitbox_left.X - 0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                        float tmpx, tmpy;
+
+                        //trying to add until it's possible 
+                        do
                         {
-                            if (!my_island.add_object(new item(cm, this.x + this.hitbox_right.X + 0.05f, this.y, currentItem.Item2.type, true, 1, currentItem.Item2)))
+                            int rndr = rnd.Next(0, 2);
+
+                            if(rndr==0)
                             {
-                                if (!my_island.add_object(new item(cm, this.x, this.y - this.hitbox_left.Y - 0.05f, currentItem.Item2.type, true, 1, currentItem.Item2)))
-                                {
-                                    my_island.add_object(new item(cm, this.x, this.y - this.hitbox_right.Y + 0.05f, currentItem.Item2.type, true, 1, currentItem.Item2));
-                                }
+                                tmpx = this.hitbox_left.X * (float)rnd.NextDouble() - 0.01f;
+                            }
+                            else
+                            {
+                                tmpx = this.hitbox_right.X * (float)rnd.NextDouble() + 0.01f;
+                            }
+                            
+                            rndr = rnd.Next(0, 2);
+
+                            if (rndr == 0)
+                            {
+                                tmpy = this.hitbox_left.Y * (float)rnd.NextDouble() - 0.01f;
+                            }
+                            else
+                            {
+                                tmpy = this.hitbox_right.Y * (float)rnd.NextDouble() + 0.01f;
+                            }
+                        }
+                        while (!my_island.add_object(new item(cm, this.x+tmpx, this.y+tmpy, currentItem.Item2.type, true, 1)));
+                    }
+                }
+
+                //turret logic
+                if (this.isTurret)
+                {
+                    this.timeSinceLastAttack++;
+
+                    if (this.timeSinceLastAttack >= this.speed)
+                    {
+                        if (my_island.map_Objects.OfType<monster>().Any())
+                        {
+                            map_object tmpobject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index, "#monster");
+
+                            if (tmpobject != null)
+                            {
+                                //direction
+                                float tmpdir = (float)Math.Atan((this.y - tmpobject.y) / (this.x - tmpobject.x)) * 57.2957795f;
+                            
+                                //tmpdir += 90;
+
+                                //added dist
+                                float tmpdist = (float)Math.Sqrt(this.hitbox_left.X * this.hitbox_left.X + this.hitbox_left.Y * this.hitbox_left.Y);
+
+                                float tmpx = (float)Math.Cos(tmpdir / 180 * Math.PI) * tmpdist * 1.1f;
+                                float tmpy = (float)Math.Sin(tmpdir / 180 * Math.PI) * tmpdist * 1.1f;
+
+                                my_island.add_object(new bullet(cm, bulletShooting.type, this.x + tmpx, this.y + tmpy, tmpdir, this.bulletShooting));
+
+                                this.timeSinceLastAttack = 0;
                             }
                         }
                     }

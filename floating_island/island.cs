@@ -43,7 +43,7 @@ namespace floating_island
         private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose, cancelButton;
 
         private bool buildingMenuClosed = true, researchMenuClosed = true;
-        private int draw_l;
+        private int draw_l, researchMenuPos=-900;
 
         private building selectedBuilding = null;
 
@@ -79,7 +79,7 @@ namespace floating_island
 
             tmptex = cm.Load<Texture2D>("cross0");
 
-            this.researchMenuClose = new button(0, 1526, 19, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("cross1"));
+            this.researchMenuClose = new button(0, 1452, 19, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("cross1"));
 
             tmptex = cm.Load<Texture2D>("backbutton0");
 
@@ -100,8 +100,6 @@ namespace floating_island
             this.currentState = Mouse.GetState();
 
             this.generate(0, cm);
-
-            this.add_object(new monster(cm, 0, 0.8f, 0.55f));
 
             this.timeSinceLastPress = 0;
         }
@@ -151,7 +149,7 @@ namespace floating_island
             }
 
             this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2], buildingSamples[2].maxhp));
-            this.add_object(new building(cm, 0.225f, 0.225f, 3, this.buildingSamples[3], buildingSamples[3].maxhp));
+            this.add_object(new building(cm, 0.225f, 0.225f, 7, this.buildingSamples[7], new List<item>(), buildingSamples[7].maxhp));
 
             var rnd = new Random();
 
@@ -170,6 +168,20 @@ namespace floating_island
                 }
             }
 
+            tmp_c = rnd.Next(3, 6);
+            c = 0;
+
+            while (c < tmp_c)
+            {
+                float tmpx = (float)rnd.NextDouble();
+                float tmpy = (float)rnd.NextDouble();
+
+                if (this.add_object(new item(cm, tmpx, tmpy, 1, true, 1, item_samples[1])))
+                {
+                    c++;
+                }
+            }
+
             int tmp_count, l;
 
             //adding heroes
@@ -181,6 +193,20 @@ namespace floating_island
                 float tmpy = (float)rnd.NextDouble();
 
                 if (this.add_object(new hero(cm, 0, tmpx, tmpy, null)))
+                {
+                    c++;
+                }
+            }
+
+            //TEST
+            c = 0;
+
+            while (c < 2)
+            {
+                float tmpx = (float)rnd.NextDouble() * 0.1f + 0.8f;
+                float tmpy = (float)rnd.NextDouble() * 0.1f + 0.8f;
+
+                if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[0].hp, this.monsterSamples[0])))
                 {
                     c++;
                 }
@@ -460,10 +486,11 @@ namespace floating_island
                 this.ticks = 0;
             }    
 
-            if(this.ticks%300 == 0)
+            //Just for testing
+            /*if(this.ticks%300 == 0)
             {
                 this.add_object(new bullet(cm, 0, 0.6f, 0.6f, 90));
-            }
+            }*/
             
             //getting mouse cursor position and converting it into island coords
             this.currentState = Mouse.GetState();
@@ -485,6 +512,13 @@ namespace floating_island
 
             if (this.researchMenuClosed)
             {
+                if (this.researchMenuPos > -900)
+                {
+                    this.researchMenuPos -= 20;
+                    
+                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.4f);
+                }
+
                 //updating buttons that to open/close building menu
                 if (this.selectedBuilding == null)
                 {
@@ -582,23 +616,32 @@ namespace floating_island
                 
                 for (int i = 0; i < this.map_Objects.Count; i += l)
                 {
-                    l = 1;
-
-                    this.map_Objects[i].update(cm, this, i);
-                    
-                    if(!this.map_Objects[i].alive)
+                    try
                     {
-                        this.delete_object(i);
-                        l = 0;
-                    }
+                        l = 1;
 
-                    if (this.map_Objects.Count < pc)
+                        this.map_Objects[i].update(cm, this, i);
+
+                        if (!this.map_Objects[i].alive)
+                        {
+                            this.delete_object(i);
+                            l = 0;
+                        }
+
+                        if (this.map_Objects.Count < pc)
+                        {
+                            l = 0;
+                        }
+
+                        pc = this.map_Objects.Count;
+                    }
+                    catch
                     {
-                        l = 0;
+                        break;
                     }
-
-                    pc = this.map_Objects.Count;
                 }
+
+                l = 1;
 
                 for (int i = 0; i < this.map_Objects.Count; i += l)
                 {
@@ -607,6 +650,8 @@ namespace floating_island
                         if ((((building)this.map_Objects[i]).itemsToComplete.Count <= 0) != completedList[i])
                         {
                             this.addResearchPoints(((building)this.map_Objects[i]).researchPointsAdded);
+
+                            completedList[i] = (((building)this.map_Objects[i]).itemsToComplete.Count <= 0);
                         }
                     }
                 }
@@ -621,14 +666,21 @@ namespace floating_island
                 //We need to keep our object list sorted by y axis to overlay images properly when drawing
                 //so we will sort them here in case if some objects were moved
                 this.map_Objects.Sort((a, b) => (a.y).CompareTo(b.y));
-
+                
                 //for building menu appear animation
                 if (this.buildingMenuClosed)
                 {
-                    if (this.buildingMenuClose.y < 876 - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
+                    //880 insted of 900 to show part of building menu
+                    if (this.buildingMenuClose.y < 880 - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
                     {
                         this.buildingMenuClose.y += 10;
                         this.buildingMenuOpen.y += 10;
+
+                        if (this.buildingMenuOpen.y > 880 - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
+                        {
+                            this.buildingMenuOpen.y = 880 - (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f);
+                            this.buildingMenuClose.y = 880 - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f);
+                        }
                     }
                 }
                 else
@@ -637,11 +689,24 @@ namespace floating_island
                     {
                         this.buildingMenuClose.y -= 10;
                         this.buildingMenuOpen.y -= 10;
+                        
+                        if (this.buildingMenuClose.y < 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
+                        {
+                            this.buildingMenuOpen.y = 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f);
+                            this.buildingMenuClose.y = 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f);
+                        }
                     }
                 }
             }
             else
             {
+                if (this.researchMenuPos < 0)
+                {
+                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.4f);
+
+                    this.researchMenuPos += 20;
+                }
+                    
                 this.mainResearchTree.update(cm, this.researchPoints, 800 - this.mainResearchTree.width / 2, 50);
 
                 foreach (var currentRecipe in this.mainResearchTree.lastResearches)
@@ -746,16 +811,16 @@ namespace floating_island
                     }
                 }
 
-                if (this.researchMenuClosed)
+                if (this.researchMenuClosed && this.researchMenuPos <= -900)
                 {
                     this.researchMenuOpen.draw(spriteBatch);
                 }
                 else
                 {
-                    spriteBatch.Draw(this.researchBackground, new Vector2(0, 0), Color.White);
+                    spriteBatch.Draw(this.researchBackground, new Vector2(0, this.researchMenuPos), Color.White);
                     this.researchMenuClose.draw(spriteBatch);
 
-                    this.mainResearchTree.draw(spriteBatch, 800-this.mainResearchTree.width/2, 50);
+                    this.mainResearchTree.draw(spriteBatch, 800 - this.mainResearchTree.width / 2, 50 + this.researchMenuPos);
                 }
             }
             else
@@ -928,6 +993,113 @@ namespace floating_island
             for (int i = 0; i < this.map_Objects.Count; i++)
             {
                 if (!indexesToIgnore.Contains(i))
+                {
+                    float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
+
+                    if (d > d1)
+                    {
+                        d = d1;
+                        ind = i;
+                    }
+                }
+            }
+
+            try
+            {
+                return this.map_Objects[ind];
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// Getting the closest object
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="indexesToIgnore"></param>
+        /// <param name="objectTypes">First words of objects-to-check save lists</param>
+        /// <returns>Closest object</returns>
+        public map_object getClosestObject(Vector2 point, List<int> indexesToIgnore, List<string> objectTypes)
+        {
+            float d = 100f;
+            int ind = -1;
+
+            for (int i = 0; i < this.map_Objects.Count; i++)
+            {
+                if (!indexesToIgnore.Contains(i) && objectTypes.Contains(this.map_Objects[i].save_list()[0]))
+                {
+                    float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
+
+                    if (d > d1)
+                    {
+                        d = d1;
+                        ind = i;
+                    }
+                }
+            }
+
+            try
+            {
+                return this.map_Objects[ind];
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Getting the closest object
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="indexesToIgnore"></param>
+        /// <param name="objectTypes">First words of objects-to-check save lists</param>
+        /// <returns>Closest object</returns>
+        public map_object getClosestObject(Vector2 point, int indexToIgnore, List<string> objectTypes)
+        {
+            float d = 100f;
+            int ind = -1;
+
+            for (int i = 0; i < this.map_Objects.Count; i++)
+            {
+                if (indexToIgnore != i && objectTypes.Contains(this.map_Objects[i].save_list()[0]))
+                {
+                    float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
+
+                    if (d > d1)
+                    {
+                        d = d1;
+                        ind = i;
+                    }
+                }
+            }
+
+            try
+            {
+                return this.map_Objects[ind];
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Getting the closest object
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="indexesToIgnore"></param>
+        /// <param name="objectType">First word of objects-to-check save lists</param>
+        /// <returns>Closest object</returns>
+        public map_object getClosestObject(Vector2 point, int indexToIgnore, string objectType)
+        {
+            float d = 100f;
+            int ind = -1;
+
+            for (int i = 0; i < this.map_Objects.Count; i++)
+            {
+                if (indexToIgnore != i && objectType==map_Objects[i].save_list()[0])
                 {
                     float d1 = this.get_dist(point.X, point.Y, this.map_Objects[i].x, this.map_Objects[i].y);
 

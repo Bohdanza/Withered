@@ -57,7 +57,7 @@ namespace floating_island
             float py = this.y;
 
             var rnd = new Random();
-            
+
             int rndr = rnd.Next(0, (int)(0.1f / this.speed));
 
             if (rndr == 0)
