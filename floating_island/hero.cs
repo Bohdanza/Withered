@@ -20,6 +20,8 @@ namespace floating_island
         public override Vector2 hitbox_left { get; protected set; }
         public override Vector2 hitbox_right { get; protected set; }
 
+        private Vector2 target=new Vector2(0, 0);
+
         List<Texture2D> textures = new List<Texture2D>();
         private int img_phase;
 
@@ -49,6 +51,11 @@ namespace floating_island
 
         public override void update(ContentManager cm, island my_island, int my_index)
         {
+            if ((target.X != 0 || target.Y != 0) && (this.path == "" || this.path == null))
+            {
+                this.path = this.find_path(this.x, this.y, target.X, target.Y, speed, my_island, my_index, -1);
+            }
+
             bool action_changes = false;
 
             string pact = this.action, pdir = this.direction;
@@ -104,6 +111,8 @@ namespace floating_island
             List<item> discoveredItems = new List<item>();
             List<item> neededItems = new List<item>();
 
+            l = 1;
+
             //checking map objects
             for (int i = 0; i < my_island.map_Objects.Count; i += l)
             {
@@ -111,29 +120,45 @@ namespace floating_island
 
                 if (my_island.map_Objects[i].save_list()[0] == "#item")
                 {
-                    if (my_island.get_dist(my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.x, this.y) <= this.speed * 3f && this.itemInHand == null)
+                    if (this.target.X == my_island.map_Objects[i].x && this.target.Y == my_island.map_Objects[i].y && my_island.get_dist(this.x, this.y, target.X, target.Y) <= this.speed)
                     {
                         this.itemInHand = (item)my_island.map_Objects[i];
 
                         my_island.delete_object(i);
                         l = 0;
+
+                        this.target = new Vector2(0, 0);
+                        this.path = null;
                     }
                     else
                     {
                         discoveredItems.Add((item)my_island.map_Objects[i]);
                     }
                 }
-                else if (my_island.map_Objects[i].save_list()[0] == "#building")
+                else if(my_island.map_Objects[i].save_list()[0]=="#building")
                 {
-                    if (this.itemInHand != null && ((building)my_island.map_Objects[i]).ItemCanBeAdded(itemInHand))
+                    if (this.itemInHand != null && ((building)my_island.map_Objects[i]).ItemCanBeAdded(this.itemInHand))
                     {
-                        if (my_island.map_Objects[i].contains_point(new Vector2(this.x + this.speed, this.y)) || my_island.map_Objects[i].contains_point(new Vector2(this.x - this.speed, this.y)) || my_island.map_Objects[i].contains_point(new Vector2(this.x, this.y + this.speed)) || my_island.map_Objects[i].contains_point(new Vector2(this.x, this.y - this.speed)))
+                        if (my_island.map_Objects[i].getSmallestDist(this.x, this.y) <= this.speed)
                         {
+                            this.path = null;
+                            this.target = new Vector2(0, 0);
+
                             ((building)my_island.map_Objects[i]).addItem(this.itemInHand, cm);
+
+                            this.itemInHand = null;
+
+                            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
+                            {
+                                this.x += my_island.map_Objects[i].hitbox_left.X;
+                                this.y += my_island.map_Objects[i].hitbox_left.Y;
+                            }
                         }
-                        else if (this.path == null || this.path.Length <= 0)
+                        else if (this.target.X == 0 && this.target.Y == 0)
                         {
-                            this.path = this.find_path(this.x, this.y, my_island.map_Objects[i].x, my_island.map_Objects[i].y, this.speed, my_island, my_index, i);
+                            this.target = new Vector2(my_island.map_Objects[i].x, my_island.map_Objects[i].y);
+
+                            this.path = this.find_path(this.x, this.y, target.X, target.Y, this.speed, my_island, my_index, i);
                         }
                     }
 
@@ -141,24 +166,35 @@ namespace floating_island
                 }
             }
 
-            //for items
-            if (this.itemInHand == null && (this.path == null || this.path == ""))
+            if (this.itemInHand==null && (this.path == "" || this.path == null) && this.target.X == 0 && this.target.Y == 0)
             {
-                bool flag = true;
+                float min_dist = 1.1f;
+                Vector2 min_target = new Vector2(0, 0);
 
-                for (int i = 0; i < neededItems.Count && flag; i++)
+                foreach(var discoveredItem in discoveredItems)
                 {
-                    foreach (var currentItem in discoveredItems)
+                    foreach (var neededItem in neededItems)
                     {
-                        if (currentItem.type == neededItems[i].type)
+                        if(discoveredItem.type==neededItem.type)
                         {
-                            this.path = this.find_path(this.x, this.y, currentItem.x, currentItem.y, this.speed, my_island, my_index, -1);
+                            float tmpdist = my_island.get_dist(this.x, this.y, discoveredItem.x, discoveredItem.y);
 
-                            if (this.path != null)
+                            if (min_dist > tmpdist)
                             {
-                                flag = false;
+                                min_target = new Vector2(discoveredItem.x, discoveredItem.y);
+                                min_dist = tmpdist;
                             }
                         }
+                    }
+                }
+
+                if (min_dist < 1.1f)
+                {
+                    this.path = this.find_path(this.x, this.y, min_target.X, min_target.Y, this.speed, my_island, my_index, -1);
+
+                    if (this.path != null && this.path != "")
+                    {
+                        this.target = min_target;
                     }
                 }
             }

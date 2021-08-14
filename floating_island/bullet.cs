@@ -112,8 +112,8 @@ namespace floating_island
         
         public override void update(ContentManager cm, island my_island, int my_index)
         {
-            this.x += (float)Math.Cos(this.degDirection / 180 * Math.PI) * this.speed;
-            this.y += (float)Math.Sin(this.degDirection / 180 * Math.PI) * this.speed;
+            this.x += (float)Math.Cos(this.degDirection) * this.speed;
+            this.y += (float)Math.Sin(this.degDirection) * this.speed;
 
             if (my_island.get_dist(0.5f, 0.5f, this.x, this.y)>1f)
             {

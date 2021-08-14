@@ -2773,6 +2773,18 @@
 /processorParam:TextureFormat=Color
 /build:cross1.png
 
+#begin drumBeat.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:drumBeat.ogg
+
+#begin drumBeat.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:drumBeat.wav
+
 #begin edge.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2844,6 +2856,13 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:island_crust.png
+
+#begin metalFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:metalFont.spritefont
 
 #begin pointsBackground.png
 /importer:TextureImporter

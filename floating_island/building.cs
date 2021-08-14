@@ -61,13 +61,13 @@ namespace floating_island
 
                 int tmpint = Int32.Parse(tmp_list[0]), currentInd;
 
-                for(currentInd=1; currentInd<=tmpint*2; currentInd+=2)
+                for (currentInd = 1; currentInd <= tmpint * 2; currentInd += 2)
                 {
                     this.itemsToComplete.Add(new item(cm, 0f, 0f, Int32.Parse(tmp_list[currentInd]), false, Int32.Parse(tmp_list[currentInd + 1])));
                 }
 
-                this.hitbox_left = new Vector2(float.Parse(tmp_list[currentInd]), float.Parse(tmp_list[currentInd+1]));
-                this.hitbox_right = new Vector2(float.Parse(tmp_list[currentInd+2]), float.Parse(tmp_list[currentInd+3]));
+                this.hitbox_left = new Vector2(float.Parse(tmp_list[currentInd]), float.Parse(tmp_list[currentInd + 1]));
+                this.hitbox_right = new Vector2(float.Parse(tmp_list[currentInd + 2]), float.Parse(tmp_list[currentInd + 3]));
 
                 currentInd += 4;
 
@@ -77,7 +77,7 @@ namespace floating_island
 
                 //reading researchpoints added
                 //first is type, second is amount
-                for(currentInd = currentInd+1; currentInd<tmpint; currentInd+=2)
+                for (currentInd = currentInd + 1; currentInd < tmpint; currentInd += 2)
                 {
                     this.researchPointsAdded.Add(new Tuple<int, int>(Int32.Parse(tmp_list[currentInd]), Int32.Parse(tmp_list[currentInd + 1])));
                 }
@@ -96,7 +96,7 @@ namespace floating_island
                 this.itemsProduction = new List<Tuple<int, item>>();
 
                 //production list initializing
-                for(currentInd=currentInd+1; currentInd<=tmpint; currentInd+=2)
+                for (currentInd = currentInd + 1; currentInd <= tmpint; currentInd += 2)
                 {
                     item tmpitem = new item(cm, 0f, 0f, Int32.Parse(tmp_list[currentInd]), true, 1);
                     int tmpProbability = Int32.Parse(tmp_list[currentInd + 1]);
@@ -177,7 +177,7 @@ namespace floating_island
                 currentInd++;
 
                 this.drawUnderOther = bool.Parse(tmp_list[currentInd]);
-                
+
                 currentInd++;
 
                 tmpint = Int32.Parse(tmp_list[currentInd]) * 2 + currentInd;
@@ -240,7 +240,7 @@ namespace floating_island
 
             this.itemsToComplete = new List<item>();
 
-            foreach(var currentItem in sampleBuilding.itemsToComplete)
+            foreach (var currentItem in sampleBuilding.itemsToComplete)
             {
                 this.itemsToComplete.Add(new item(cm, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
@@ -259,7 +259,7 @@ namespace floating_island
 
             this.isTurret = sampleBuilding.isTurret;
 
-            if(this.isTurret)
+            if (this.isTurret)
             {
                 this.bulletShooting = sampleBuilding.bulletShooting;
 
@@ -347,7 +347,7 @@ namespace floating_island
                 this.textures = new List<Texture2D>();
                 this.imgPhase = 0;
 
-                bool tmpf = this.itemsToComplete.Count<=0;
+                bool tmpf = this.itemsToComplete.Count <= 0;
 
                 while (File.Exists(@"Content\" + this.type.ToString() + "building" + this.imgPhase.ToString() + tmpf.ToString() + ".xnb"))
                 {
@@ -393,7 +393,7 @@ namespace floating_island
                         {
                             int rndr = rnd.Next(0, 2);
 
-                            if(rndr==0)
+                            if (rndr == 0)
                             {
                                 tmpx = this.hitbox_left.X * (float)rnd.NextDouble() - 0.01f;
                             }
@@ -401,7 +401,7 @@ namespace floating_island
                             {
                                 tmpx = this.hitbox_right.X * (float)rnd.NextDouble() + 0.01f;
                             }
-                            
+
                             rndr = rnd.Next(0, 2);
 
                             if (rndr == 0)
@@ -413,7 +413,7 @@ namespace floating_island
                                 tmpy = this.hitbox_right.Y * (float)rnd.NextDouble() + 0.01f;
                             }
                         }
-                        while (!my_island.add_object(new item(cm, this.x+tmpx, this.y+tmpy, currentItem.Item2.type, true, 1)));
+                        while (!my_island.add_object(new item(cm, this.x + tmpx, this.y + tmpy, currentItem.Item2.type, true, 1)));
                     }
                 }
 
@@ -431,15 +431,17 @@ namespace floating_island
                             if (tmpobject != null)
                             {
                                 //direction
-                                float tmpdir = (float)Math.Atan((this.y - tmpobject.y) / (this.x - tmpobject.x)) * 57.2957795f;
-                            
-                                //tmpdir += 90;
+                                float tmpdir = (float)Math.Atan2(this.y-tmpobject.y, this.x-tmpobject.x);
+
+                                tmpdir += (float)Math.PI;
+
+                                tmpdir %= (float)(Math.PI*2);
 
                                 //added dist
                                 float tmpdist = (float)Math.Sqrt(this.hitbox_left.X * this.hitbox_left.X + this.hitbox_left.Y * this.hitbox_left.Y);
 
-                                float tmpx = (float)Math.Cos(tmpdir / 180 * Math.PI) * tmpdist * 1.1f;
-                                float tmpy = (float)Math.Sin(tmpdir / 180 * Math.PI) * tmpdist * 1.1f;
+                                float tmpx = (float)Math.Cos(tmpdir) * tmpdist * 1.1f;
+                                float tmpy = (float)Math.Sin(tmpdir) * tmpdist * 1.1f;
 
                                 my_island.add_object(new bullet(cm, bulletShooting.type, this.x + tmpx, this.y + tmpy, tmpdir, this.bulletShooting));
 
@@ -452,20 +454,27 @@ namespace floating_island
 
             this.update_texture(cm, false);
         }
-        
+
         public override void draw(SpriteBatch spriteBatch, int x, int y)
         {
             int tmpw = this.textures[this.imgPhase].Width;
             int tmph = this.textures[this.imgPhase].Height;
 
-            spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
+            if (this.drawUnderOther)
+            {
+                spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph / 2), Color.White);
+            }
+            else
+            {
+                spriteBatch.Draw(this.textures[this.imgPhase], new Vector2(x - tmpw / 2, y - tmph), Color.White);
+            }
 
-            if(this.hp<this.maxhp)
+            if (this.hp < this.maxhp)
             {
                 float hpp = (float)hp / maxhp;
 
                 spriteBatch.Draw(minHpTex, new Vector2(x - minHpTex.Width / 2, y - tmph * 1.1f - minHpTex.Height), Color.White);
-                spriteBatch.Draw(maxHpTex, new Vector2(x - maxHpTex.Width / 2, y - tmph * 1.1f - maxHpTex.Height), new Rectangle(0, 0, (int)(maxHpTex.Width*hpp), maxHpTex.Height), Color.White);
+                spriteBatch.Draw(maxHpTex, new Vector2(x - maxHpTex.Width / 2, y - tmph * 1.1f - maxHpTex.Height), new Rectangle(0, 0, (int)(maxHpTex.Width * hpp), maxHpTex.Height), Color.White);
             }
         }
 
@@ -490,11 +499,11 @@ namespace floating_island
         {
             int l = 1;
 
-            for(int i=0; i<this.itemsToComplete.Count; i+=l)
+            for (int i = 0; i < this.itemsToComplete.Count; i += l)
             {
                 l = 1;
 
-                if(this.itemsToComplete[i].type==itemToAdd.type)
+                if (this.itemsToComplete[i].type == itemToAdd.type)
                 {
                     int tmpc = this.itemsToComplete[i].number;
 
@@ -503,7 +512,7 @@ namespace floating_island
                     itemToAdd.number = Math.Max(0, itemToAdd.number + this.itemsToComplete[i].number - tmpc);
                 }
 
-                if(this.itemsToComplete[i].number<=0)
+                if (this.itemsToComplete[i].number <= 0)
                 {
                     this.itemsToComplete.RemoveAt(i);
 
@@ -525,8 +534,8 @@ namespace floating_island
             tmp_list.Add(this.hp.ToString());
 
             tmp_list.Add(this.itemsToComplete.Count.ToString());
-            
-            foreach(var currentItem in this.itemsToComplete)
+
+            foreach (var currentItem in this.itemsToComplete)
             {
                 tmp_list.Add(currentItem.type.ToString());
                 tmp_list.Add(currentItem.number.ToString());
@@ -537,9 +546,9 @@ namespace floating_island
 
         public bool ItemCanBeAdded(item itemToAdd)
         {
-            foreach(var currentItem in this.itemsToComplete)
+            foreach (var currentItem in this.itemsToComplete)
             {
-                if(currentItem.type == itemToAdd.type && currentItem.number>0)
+                if (currentItem.type == itemToAdd.type && currentItem.number > 0)
                 {
                     return true;
                 }
@@ -552,13 +561,13 @@ namespace floating_island
         {
             this.hp -= damage;
 
-            if(this.hp<=0)
+            if (this.hp <= 0)
             {
                 this.hp = 0;
                 this.alive = false;
             }
 
-            if(this.hp>this.maxhp)
+            if (this.hp > this.maxhp)
             {
                 this.hp = this.maxhp;
             }

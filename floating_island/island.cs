@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace floating_island
 {
@@ -18,7 +20,12 @@ namespace floating_island
         
         public const int crustXPos = 386;
         public const int crustYPos = 228;
-        
+
+        public const int waveDelay = 1000;
+
+        public int timeSinceLastWave { get; private set; }
+        public int waveNumber { get; private set; }
+
         public float radius { get; private set; }
 
         public MouseState currentState { get; private set; }
@@ -52,15 +59,25 @@ namespace floating_island
 
         private List<ResearchPoint> researchPoints = new List<ResearchPoint>();
         private researchTree mainResearchTree;
+        private SpriteFont wavesFont;
+
+        public SoundEffect waveSound { get; private set; }
 
         public island(ContentManager cm, List<plant> plant_samples, List<item> item_samples, List<building> buildingSamples, List<monster> monsterSamples, string path)
         {
+            this.timeSinceLastWave = 256;
+            this.waveNumber = 0;
+
             this.plant_samples = plant_samples;
             this.item_samples = item_samples;
             this.buildingSamples = buildingSamples;
             this.monsterSamples = monsterSamples;
 
             this.draw_l = 1;
+
+            this.waveSound = cm.Load<SoundEffect>("drumBeat");
+
+            this.wavesFont = cm.Load<SpriteFont>("metalFont");
 
             this.crust = cm.Load<Texture2D>("island_crust");
             this.attentionDarkness = cm.Load<Texture2D>("attentionDarkness");
@@ -111,6 +128,8 @@ namespace floating_island
             this.buildingRecipeList = new List<building>();
             this.researchPoints = new List<ResearchPoint>();
 
+            this.waveNumber = 0;
+
             for (int i = 0; i < 1; i++)
             {
                 this.buildingRecipeList.Add(new building(cm, 0f, 0f, i, buildingSamples[i], buildingSamples[i].maxhp));
@@ -147,10 +166,9 @@ namespace floating_island
             {
                 this.researchPoints.Add(new ResearchPoint(cm, i, 0, tmpfont));
             }
-
-            this.add_object(new building(cm, 0.5f, 0.5f, 2, this.buildingSamples[2], buildingSamples[2].maxhp));
-            this.add_object(new building(cm, 0.225f, 0.225f, 7, this.buildingSamples[7], new List<item>(), buildingSamples[7].maxhp));
-
+            
+            this.add_object(new building(cm, 0.5f, 0.5f, 7, this.buildingSamples[7], new List<item>(), buildingSamples[7].maxhp));
+            
             var rnd = new Random();
 
             //adding items
@@ -484,7 +502,36 @@ namespace floating_island
             if(this.ticks>=1000000)
             {
                 this.ticks = 0;
-            }    
+            }
+
+            if (this.researchMenuClosed)
+            {
+                //this.timeSinceLastWave++;
+                
+                if (this.timeSinceLastWave == waveDelay)
+                {
+                    this.timeSinceLastWave = 0;
+                    this.waveNumber++;
+
+                    this.waveSound.Play();
+
+                    var rnd = new Random();
+
+                    int tmpc1 = 0;
+                    int tmpc = 5 + (this.waveNumber - 1) * 3;
+
+                    while (tmpc1 < tmpc)
+                    {
+                        float tmpx = (float)rnd.NextDouble();
+                        float tmpy = (float)rnd.NextDouble();
+
+                        if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[0].hp, this.monsterSamples[0])))
+                        {
+                            tmpc1++;
+                        }
+                    }
+                }
+            }
 
             //Just for testing
             /*if(this.ticks%300 == 0)
@@ -514,9 +561,14 @@ namespace floating_island
             {
                 if (this.researchMenuPos > -900)
                 {
-                    this.researchMenuPos -= 20;
+                    this.researchMenuPos -= 50;
                     
-                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.4f);
+                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.7f);
+
+                    if (this.researchMenuPos < -900)
+                    {
+                        this.researchMenuPos = -900;
+                    }
                 }
 
                 //updating buttons that to open/close building menu
@@ -702,9 +754,14 @@ namespace floating_island
             {
                 if (this.researchMenuPos < 0)
                 {
-                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.4f);
+                    this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.7f);
 
-                    this.researchMenuPos += 20;
+                    this.researchMenuPos += 50;
+
+                    if (this.researchMenuPos > 0)
+                    {
+                        this.researchMenuPos = 0;
+                    }
                 }
                     
                 this.mainResearchTree.update(cm, this.researchPoints, 800 - this.mainResearchTree.width / 2, 50);
@@ -783,6 +840,14 @@ namespace floating_island
                 start -= (int)(this.researchPoints[i].getDrawRect().X * 1.1f);
 
                 this.researchPoints[i].draw(spriteBatch, start, (int)(this.researchPoints[i].getDrawRect().Y * 0.1f));
+            }
+
+            //drawing Wave X sign
+            if (this.timeSinceLastWave <= 255)
+            {
+                Vector2 vector = this.wavesFont.MeasureString("Wave " + this.waveNumber.ToString());
+
+                spriteBatch.DrawString(this.wavesFont, "Wave " + this.waveNumber.ToString(), new Vector2(800 - vector.X/2, 60), new Color(0, 0, 0, 255-this.timeSinceLastWave));
             }
 
             //drawing buildings on building panel, buttons etc.
@@ -1048,7 +1113,6 @@ namespace floating_island
                 return null;
             }
         }
-
         /// <summary>
         /// Getting the closest object
         /// </summary>
@@ -1084,7 +1148,6 @@ namespace floating_island
                 return null;
             }
         }
-
         /// <summary>
         /// Getting the closest object
         /// </summary>

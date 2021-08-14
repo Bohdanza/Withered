@@ -87,6 +87,9 @@ namespace floating_island
                 tmpy = Math.Abs(y - this.y - this.hitbox_right.Y);
             }
 
+            tmpx = Math.Min(tmpx, Math.Abs(this.x - x));
+            tmpy = Math.Min(tmpy, Math.Abs(this.y - y));
+
             return (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
         }
     }
