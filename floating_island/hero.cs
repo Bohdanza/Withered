@@ -106,96 +106,154 @@ namespace floating_island
                 this.itemInHand = null;
             }
 
-            //We need this list, just trust me
-            //I'm just to lazy to write why
-            List<item> discoveredItems = new List<item>();
-            List<item> neededItems = new List<item>();
-
-            l = 1;
-
-            //checking map objects
-            for (int i = 0; i < my_island.map_Objects.Count; i += l)
+            //item delivery logic
+            if (this.itemInHand == null)
             {
-                l = 1;
-
-                if (my_island.map_Objects[i].save_list()[0] == "#item")
+                if (this.path == null || this.path.Length <= 0)
                 {
-                    if (this.target.X == my_island.map_Objects[i].x && this.target.Y == my_island.map_Objects[i].y && my_island.get_dist(this.x, this.y, target.X, target.Y) <= this.speed)
-                    {
-                        this.itemInHand = (item)my_island.map_Objects[i];
+                    //We need this list, just trust me
+                    //I'm just to lazy to write why
+                    List<item> neededItems = new List<item>();
 
-                        my_island.delete_object(i);
-                        l = 0;
+                    l = 1;
 
-                        this.target = new Vector2(0, 0);
-                        this.path = null;
-                    }
-                    else
+                    //searching for buildings
+                    for (int i = 0; i < my_island.map_Objects.Count; i += l)
                     {
-                        discoveredItems.Add((item)my_island.map_Objects[i]);
-                    }
-                }
-                else if(my_island.map_Objects[i].save_list()[0]=="#building")
-                {
-                    if (this.itemInHand != null && ((building)my_island.map_Objects[i]).ItemCanBeAdded(this.itemInHand))
-                    {
-                        if (my_island.map_Objects[i].getSmallestDist(this.x, this.y) <= this.speed)
+                        map_object currentObject = my_island.map_Objects[i];
+
+                        //if object is building then we add needed items
+                        if (currentObject.save_list()[0] == "#building")
                         {
-                            this.path = null;
-                            this.target = new Vector2(0, 0);
+                            neededItems.AddRange(((building)currentObject).itemsToComplete);
+                        }
+                    }
 
-                            ((building)my_island.map_Objects[i]).addItem(this.itemInHand, cm);
 
-                            this.itemInHand = null;
+                    l = 1;
 
-                            if (!my_island.is_point_free(new Vector2(this.x, this.y), my_index))
+                    float minDist = 1.1f;
+                    int minInd = -1;
+
+                    bool end = false;
+
+                    for (int i = 0; i < my_island.map_Objects.Count && !end; i += l)
+                    {
+                        map_object currentObject = my_island.map_Objects[i];
+
+                        if (currentObject.save_list()[0] == "#item")
+                        {
+                            foreach(var currentItem in neededItems)
                             {
-                                this.x += my_island.map_Objects[i].hitbox_left.X;
-                                this.y += my_island.map_Objects[i].hitbox_left.Y;
+                                if (currentItem.type == currentObject.type)
+                                {
+                                    float tmpDist = my_island.get_dist(this.x, this.y, currentObject.x, currentObject.y);
+
+                                    if (tmpDist <= this.speed)
+                                    {
+                                        this.itemInHand = (item)currentObject;
+                                        my_island.delete_object(i);
+
+                                        end = true;
+
+                                        minInd = -1;
+
+                                        break;
+                                    }
+                                    else if(minDist>tmpDist)
+                                    {
+                                        minDist = tmpDist;
+                                        minInd = i;
+                                    }
+                                }
                             }
                         }
-                        else if (this.target.X == 0 && this.target.Y == 0)
-                        {
-                            this.target = new Vector2(my_island.map_Objects[i].x, my_island.map_Objects[i].y);
-
-                            this.path = this.find_path(this.x, this.y, target.X, target.Y, this.speed, my_island, my_index, i);
-                        }
                     }
 
-                    neededItems.AddRange(((building)my_island.map_Objects[i]).itemsToComplete);
+                    if (minInd != -1)
+                    {
+                        this.path = find_path(this.x, this.y, my_island.map_Objects[minInd].x, my_island.map_Objects[minInd].y, this.speed, my_island, my_index, minInd);
+                    }
                 }
             }
-
-            if (this.itemInHand==null && (this.path == "" || this.path == null) && this.target.X == 0 && this.target.Y == 0)
+            else if(this.path == null || this.path.Length <= 0)
             {
-                float min_dist = 1.1f;
-                Vector2 min_target = new Vector2(0, 0);
+                float minDist = 1.1f;
+                int minInd = -1;
 
-                foreach(var discoveredItem in discoveredItems)
+                bool end1 = false;
+
+                for (int i = 0; i < my_island.map_Objects.Count && !end1; i++)
                 {
-                    foreach (var neededItem in neededItems)
-                    {
-                        if(discoveredItem.type==neededItem.type)
-                        {
-                            float tmpdist = my_island.get_dist(this.x, this.y, discoveredItem.x, discoveredItem.y);
+                    map_object currentObject = my_island.map_Objects[i];
 
-                            if (min_dist > tmpdist)
+                    if(currentObject.save_list()[0]=="#building")
+                    {
+                        building currentBuilding = (building)currentObject;
+
+                        bool end = false;
+
+                        for (int j = 0; j < currentBuilding.itemsToComplete.Count && !end; j++)
+                        {
+                            if (currentBuilding.itemsToComplete[j].type == this.itemInHand.type)
                             {
-                                min_target = new Vector2(discoveredItem.x, discoveredItem.y);
-                                min_dist = tmpdist;
+                                float tmpDist = currentBuilding.getSmallestDist(this.x, this.y);
+
+                                if (tmpDist <= this.speed)
+                                {
+                                    currentBuilding.addItem(this.itemInHand, cm);
+
+                                    this.itemInHand = null;
+
+                                    float tmpx = 0;
+                                    float tmpy = 0;
+
+                                    while(!my_island.is_point_free(new Vector2(this.x+tmpx, this.y+tmpy), my_index))
+                                    {
+                                        int rndr1 = rnd.Next(0, 2);
+
+                                        if (rndr1 == 0)
+                                        {
+                                            tmpx = currentBuilding.hitbox_left.X * (float)rnd.NextDouble() - this.speed;
+                                        }
+                                        else
+                                        {
+                                            tmpx = currentBuilding.hitbox_right.X * (float)rnd.NextDouble() + this.speed;
+                                        }
+
+                                        rndr1 = rnd.Next(0, 2);
+
+                                        if (rndr1 == 0)
+                                        {
+                                            tmpy = currentBuilding.hitbox_left.Y * (float)rnd.NextDouble() - this.speed;
+                                        }
+                                        else
+                                        {
+                                            tmpy = currentBuilding.hitbox_right.Y * (float)rnd.NextDouble() + this.speed;
+                                        }
+                                    }
+
+                                    this.x += tmpx;
+                                    this.y += tmpy;
+
+                                    end = true;
+                                    end1 = true;
+
+                                    minInd = -1;
+                                }
+                                else if (minDist > tmpDist)
+                                {
+                                    minDist = tmpDist;
+                                    minInd = i;
+                                }
                             }
                         }
                     }
                 }
 
-                if (min_dist < 1.1f)
+                if (minInd != -1)
                 {
-                    this.path = this.find_path(this.x, this.y, min_target.X, min_target.Y, this.speed, my_island, my_index, -1);
-
-                    if (this.path != null && this.path != "")
-                    {
-                        this.target = min_target;
-                    }
+                    this.path = find_path(this.x, this.y, my_island.map_Objects[minInd].x, my_island.map_Objects[minInd].y, this.speed, my_island, my_index, minInd);
                 }
             }
 

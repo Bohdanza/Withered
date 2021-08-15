@@ -395,22 +395,22 @@ namespace floating_island
 
                             if (rndr == 0)
                             {
-                                tmpx = this.hitbox_left.X * (float)rnd.NextDouble() - 0.01f;
+                                tmpx = this.hitbox_left.X * (float)rnd.NextDouble() - 0.02f;
                             }
                             else
                             {
-                                tmpx = this.hitbox_right.X * (float)rnd.NextDouble() + 0.01f;
+                                tmpx = this.hitbox_right.X * (float)rnd.NextDouble() + 0.02f;
                             }
 
                             rndr = rnd.Next(0, 2);
 
                             if (rndr == 0)
                             {
-                                tmpy = this.hitbox_left.Y * (float)rnd.NextDouble() - 0.01f;
+                                tmpy = this.hitbox_left.Y * (float)rnd.NextDouble() - 0.02f;
                             }
                             else
                             {
-                                tmpy = this.hitbox_right.Y * (float)rnd.NextDouble() + 0.01f;
+                                tmpy = this.hitbox_right.Y * (float)rnd.NextDouble() + 0.02f;
                             }
                         }
                         while (!my_island.add_object(new item(cm, this.x + tmpx, this.y + tmpy, currentItem.Item2.type, true, 1)));

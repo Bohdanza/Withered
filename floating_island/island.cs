@@ -21,7 +21,7 @@ namespace floating_island
         public const int crustXPos = 386;
         public const int crustYPos = 228;
 
-        public const int waveDelay = 1000;
+        public const int waveDelay = 216000;
 
         public int timeSinceLastWave { get; private set; }
         public int waveNumber { get; private set; }
@@ -269,6 +269,19 @@ namespace floating_island
                 var tmpf = File.Create(path + "researches");
                 tmpf.Close();
             }
+            
+            //preparing wave_info file
+            if (!File.Exists(path + "wave_info"))
+            {
+                var tmpf = File.Create(path + "wave_info");
+                tmpf.Close();
+            }
+            else
+            {
+                File.Delete(path + "wave_info");
+                var tmpf = File.Create(path + "wave_info");
+                tmpf.Close();
+            }
 
             using (StreamWriter sr = new StreamWriter(path + "map_objects"))
             {
@@ -312,6 +325,11 @@ namespace floating_island
                 {
                     sr.WriteLine(currentBuilding.type.ToString());
                 }
+            }
+
+            using (StreamWriter sr = new StreamWriter(path + "wave_info"))
+            {
+                sr.WriteLine(this.waveNumber.ToString());
             }
         }
 
@@ -485,6 +503,13 @@ namespace floating_island
                         this.buildingRecipeList.Add(new building(cm, 0f, 0f, tmptype, this.buildingSamples[tmptype], buildingSamples[i].maxhp));
                     }
                 }
+
+                using (StreamReader sr = new StreamReader(path + "wave_info"))
+                {
+                    List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
+
+                    this.waveNumber = Int32.Parse(tmplist[0]);
+                }
             }
             catch
             {
@@ -506,7 +531,7 @@ namespace floating_island
 
             if (this.researchMenuClosed)
             {
-                //this.timeSinceLastWave++;
+                this.timeSinceLastWave++;
                 
                 if (this.timeSinceLastWave == waveDelay)
                 {
