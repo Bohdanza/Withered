@@ -15,8 +15,15 @@ namespace floating_island
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private game_world main_world;
+        private game_world main_world = null;
         private bool saved = false;
+        private int backgroundDrawX = 0, Xmovement = -1;
+        private Texture2D back_texture, loading_back;
+        private button playButton;
+        private bool worldLoaded = false;
+        private List<string> worlds=Directory.EnumerateDirectories(@"info\worlds\").ToList();
+        private int worldListDrawY = 0;
+        private TextSpace textSpace;
 
         public Game1()
         {
@@ -32,13 +39,14 @@ namespace floating_island
             _graphics.PreferredBackBufferWidth = 1600;
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
+
+         //   _graphics.IsFullScreen = true;
+            _graphics.ApplyChanges();
         }
 
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            this.main_world = new game_world(this.Content, @"info\world1");
-
             base.Initialize();
         }
 
@@ -47,21 +55,32 @@ namespace floating_island
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            this.back_texture = this.Content.Load<Texture2D>("main_menu_background");
+            this.loading_back = this.Content.Load<Texture2D>("loadingback");
+
+            this.textSpace = new TextSpace(40, 330, 515, 65, Content.Load<SpriteFont>("menu_font"));
+
+            this.playButton = new button(0, 30, 30, 550, 209, this.Content.Load<Texture2D>("playbutton0"), this.Content.Load<Texture2D>("playbutton1"));
         }
 
         protected override void Update(GameTime gameTime)
         {
+            var mouseState = Mouse.GetState();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
-                this.main_world.save(Content);
-                this.saved = true;
+                if (this.main_world != null)
+                {
+                    this.main_world.save(Content);
+                    this.saved = true;
+                }
 
                 Exit();
             }
 
             if (IsActive == false)
             {
-                if (this.saved == false)
+                if (this.saved == false && this.main_world != null)
                 {
                     this.main_world.save(Content);
                     this.saved = true;
@@ -69,8 +88,37 @@ namespace floating_island
             }
             else
             {
-                this.main_world.update(this.Content);
-                this.saved = false;
+                if (this.main_world != null)
+                {
+                    this.main_world.update(this.Content);
+                    
+                    this.saved = false;
+                }
+                else
+                {
+                    if (this.worldLoaded && this.main_world == null)
+                    {
+                        this.main_world = new game_world(this.Content, @"info\worlds\world1");
+                    }
+                    else
+                    {
+                        this.backgroundDrawX += Xmovement;
+
+                        if (this.backgroundDrawX <= 1600 - this.back_texture.Width || this.backgroundDrawX >= 0)
+                        {
+                            this.Xmovement *= -1;
+                        }
+
+                        this.playButton.update();
+
+                        if (this.playButton.pressed)
+                        {
+                            this.worldLoaded = true;
+                        }
+
+                        this.textSpace.update(Content);
+                    }
+                }
             }
 
             base.Update(gameTime);
@@ -82,7 +130,25 @@ namespace floating_island
 
             _spriteBatch.Begin();
 
-            this.main_world.draw(_spriteBatch);
+            if (this.main_world == null)
+            {
+                if (!this.worldLoaded)
+                {
+                    _spriteBatch.Draw(this.back_texture, new Vector2(this.backgroundDrawX, 0), Color.White);
+
+                    this.playButton.draw(_spriteBatch);
+
+                    textSpace.draw(_spriteBatch);
+                }
+                else
+                {
+                    _spriteBatch.Draw(loading_back, new Vector2(0, 0), Color.White);
+                }
+            }
+            else
+            {
+                this.main_world.draw(_spriteBatch);
+            }
 
             _spriteBatch.End();
 
