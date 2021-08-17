@@ -74,6 +74,10 @@ namespace floating_island
             forbiddenKeys.Add(Keys.NumPad7);
             forbiddenKeys.Add(Keys.NumPad8);
             forbiddenKeys.Add(Keys.NumPad9);
+
+            forbiddenKeys.Add(Keys.CapsLock);
+
+            forbiddenKeys.Add(Keys.Delete);
         }
 
         public void update(ContentManager contentManager)
@@ -98,7 +102,7 @@ namespace floating_island
                 }
             }
 
-            if (selected && timeSinceLastPress >= 8)
+            if (selected && timeSinceLastPress >= 7)
             {
                 var keyboardState = Keyboard.GetState();
                 var keys = keyboardState.GetPressedKeys();
@@ -109,53 +113,69 @@ namespace floating_island
 
                     if (!forbiddenKeys.Contains(keys[0]))
                     {
-                        var keyValue = keys[0].ToString();
-                        currentString += keyValue;
+                        char keyValue = keys[0].ToString()[0];
 
                         if (!keys.Contains(Keys.LeftShift) && !keys.Contains(Keys.RightShift))
                         {
-                            StringBuilder sb = new StringBuilder(currentString);
-
-                            sb[currentString.Length - 1] += (char)32;
-
-                            currentString = sb.ToString();
+                            keyValue += (char)32;
                         }
+
+                        string tmpstr = "" + keyValue;
+
+                        currentString = currentString.Insert(cursorPos, tmpstr);
+
+                        cursorPos++;
                     }
                     else if (keys[0] == Keys.Back)
                     {
-                        if (currentString.Length > 0)
+                        if (currentString.Length > 0 && cursorPos > 0)
                         {
-                            currentString = currentString.Remove(currentString.Length - 1);
+                            currentString = currentString.Remove(cursorPos - 1, 1);
+
+                            cursorPos--;
                         }
                     }
                     else if (keys[0] == Keys.Space)
                     {
                         currentString += " ";
+
+                        cursorPos++;
                     }
-                    else if(keys[0]==Keys.D0|| keys[0] == Keys.D1 || keys[0] == Keys.D2 || keys[0] == Keys.D3 || keys[0] == Keys.D4 || keys[0] == Keys.D5 || keys[0] == Keys.D6 || keys[0] == Keys.D7 || keys[0] == Keys.D8 || keys[0] == Keys.D9)
+                    else if (keys[0] == Keys.D0 || keys[0] == Keys.D1 || keys[0] == Keys.D2 || keys[0] == Keys.D3 || keys[0] == Keys.D4 || keys[0] == Keys.D5 || keys[0] == Keys.D6 || keys[0] == Keys.D7 || keys[0] == Keys.D8 || keys[0] == Keys.D9)
                     {
                         string tmpstr = keys[0].ToString();
 
                         tmpstr = tmpstr.Remove(0, 1);
 
-                        currentString += tmpstr;
+                        currentString = currentString.Insert(cursorPos, tmpstr);
+
+                        cursorPos++;
+                    }
+                    else if (keys[0] == Keys.Right && cursorPos < currentString.Length)
+                    {
+                        cursorPos++;
+                    }
+                    else if (keys[0] == Keys.Left && cursorPos > 0)
+                    {
+                        cursorPos--;
+                    }
+                    else if (keys[0] == Keys.Delete && currentString.Length > 0 && cursorPos < currentString.Length)
+                    {
+                        currentString = currentString.Remove(cursorPos, 1);
                     }
                 }
             }
         }
 
         public void draw(SpriteBatch spriteBatch)
-        {
-            int strWidth = (int)font.MeasureString(currentString).X;
-
-            spriteBatch.DrawString(font, currentString, new Vector2(x, y), Color.Black);
-
-            if (selected)
+        { 
+            if (selected && this.tick % 60 >= 30)
             {
-                if (this.tick%60 >= 30)
-                {
-                    spriteBatch.DrawString(font, "|", new Vector2(x + strWidth, y), Color.Black);
-                }
+                spriteBatch.DrawString(font, currentString.Insert(cursorPos, "|"), new Vector2(x, y), Color.Black);
+            }
+            else
+            {
+                spriteBatch.DrawString(font, currentString, new Vector2(x, y), Color.Black);
             }
         }
     }

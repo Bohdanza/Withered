@@ -18,12 +18,13 @@ namespace floating_island
         private game_world main_world = null;
         private bool saved = false;
         private int backgroundDrawX = 0, Xmovement = -1;
-        private Texture2D back_texture, loading_back;
+        private Texture2D back_texture, loading_back, beginTexture;
         private button playButton;
         private bool worldLoaded = false;
         private List<string> worlds=Directory.EnumerateDirectories(@"info\worlds\").ToList();
         private int worldListDrawY = 0;
         private TextSpace textSpace;
+        private int timeSinceShow = 0;
 
         public Game1()
         {
@@ -57,6 +58,7 @@ namespace floating_island
             // TODO: use this.Content to load your game content here
             this.back_texture = this.Content.Load<Texture2D>("main_menu_background");
             this.loading_back = this.Content.Load<Texture2D>("loadingback");
+            this.beginTexture = this.Content.Load<Texture2D>("firstimage");
 
             this.textSpace = new TextSpace(40, 330, 515, 65, Content.Load<SpriteFont>("menu_font"));
 
@@ -67,58 +69,65 @@ namespace floating_island
         {
             var mouseState = Mouse.GetState();
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (this.timeSinceShow >= 500)
             {
-                if (this.main_world != null)
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 {
-                    this.main_world.save(Content);
-                    this.saved = true;
+                    if (this.main_world != null)
+                    {
+                        this.main_world.save(Content);
+                        this.saved = true;
+                    }
+
+                    Exit();
                 }
 
-                Exit();
-            }
-
-            if (IsActive == false)
-            {
-                if (this.saved == false && this.main_world != null)
+                if (IsActive == false)
                 {
-                    this.main_world.save(Content);
-                    this.saved = true;
+                    if (this.saved == false && this.main_world != null)
+                    {
+                        this.main_world.save(Content);
+                        this.saved = true;
+                    }
+                }
+                else
+                {
+                    if (this.main_world != null)
+                    {
+                        this.main_world.update(this.Content);
+
+                        this.saved = false;
+                    }
+                    else
+                    {
+                        if (this.worldLoaded && this.main_world == null)
+                        {
+                            this.main_world = new game_world(this.Content, @"info\worlds\world1");
+                        }
+                        else
+                        {
+                            this.backgroundDrawX += Xmovement;
+
+                            if (this.backgroundDrawX <= 1600 - this.back_texture.Width || this.backgroundDrawX >= 0)
+                            {
+                                this.Xmovement *= -1;
+                            }
+
+                            this.playButton.update();
+
+                            if (this.playButton.pressed)
+                            {
+                                this.worldLoaded = true;
+                            }
+
+                            this.textSpace.update(Content);
+                        }
+                    }
                 }
             }
             else
             {
-                if (this.main_world != null)
-                {
-                    this.main_world.update(this.Content);
-                    
-                    this.saved = false;
-                }
-                else
-                {
-                    if (this.worldLoaded && this.main_world == null)
-                    {
-                        this.main_world = new game_world(this.Content, @"info\worlds\world1");
-                    }
-                    else
-                    {
-                        this.backgroundDrawX += Xmovement;
-
-                        if (this.backgroundDrawX <= 1600 - this.back_texture.Width || this.backgroundDrawX >= 0)
-                        {
-                            this.Xmovement *= -1;
-                        }
-
-                        this.playButton.update();
-
-                        if (this.playButton.pressed)
-                        {
-                            this.worldLoaded = true;
-                        }
-
-                        this.textSpace.update(Content);
-                    }
-                }
+                this.timeSinceShow++;
             }
 
             base.Update(gameTime);
@@ -126,28 +135,37 @@ namespace floating_island
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.LightSkyBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             _spriteBatch.Begin();
 
-            if (this.main_world == null)
+            if (timeSinceShow >= 500)
             {
-                if (!this.worldLoaded)
+                if (this.main_world == null)
                 {
-                    _spriteBatch.Draw(this.back_texture, new Vector2(this.backgroundDrawX, 0), Color.White);
+                    if (!this.worldLoaded)
+                    {
+                        _spriteBatch.Draw(this.back_texture, new Vector2(this.backgroundDrawX, 0), Color.White);
 
-                    this.playButton.draw(_spriteBatch);
+                        this.playButton.draw(_spriteBatch);
 
-                    textSpace.draw(_spriteBatch);
+                        textSpace.draw(_spriteBatch);
+                    }
+                    else
+                    {
+                        _spriteBatch.Draw(loading_back, new Vector2(0, 0), Color.White);
+                    }
                 }
                 else
                 {
-                    _spriteBatch.Draw(loading_back, new Vector2(0, 0), Color.White);
+                    this.main_world.draw(_spriteBatch);
                 }
             }
-            else
+            else if(timeSinceShow>=200)
             {
-                this.main_world.draw(_spriteBatch);
+                int tmpbright = Math.Min(timeSinceShow-200, 255);
+
+                _spriteBatch.Draw(beginTexture, new Vector2(0, 0), new Color(tmpbright, tmpbright, tmpbright));
             }
 
             _spriteBatch.End();
