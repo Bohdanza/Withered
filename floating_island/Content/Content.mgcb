@@ -2900,6 +2900,18 @@
 /processorParam:TextureFormat=Compressed
 /build:menu_font.spritefont
 
+#begin menuback2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:menuback2.png
+
 #begin metalFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

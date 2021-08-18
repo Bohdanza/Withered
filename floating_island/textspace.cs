@@ -20,10 +20,12 @@ namespace floating_island
         public bool selected { get; private set; }
         private int tick = 0, timeSinceLastPress=0;
         private List<Keys> forbiddenKeys;
-        private int cursorPos = 0;
+        private int cursorPos = 0, maxLength;
 
-        public TextSpace(int x, int y, int width, int height, SpriteFont font)
+        public TextSpace(int x, int y, int width, int height, int maxLength, SpriteFont font)
         {
+            this.maxLength = maxLength;
+
             this.x = x;
             this.y = y;
 
@@ -163,6 +165,13 @@ namespace floating_island
                     {
                         currentString = currentString.Remove(cursorPos, 1);
                     }
+                }
+
+                if (currentString.Length > maxLength)
+                {
+                    currentString = currentString.Remove(maxLength, currentString.Length - maxLength);
+
+                    cursorPos--;
                 }
             }
         }
