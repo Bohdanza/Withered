@@ -136,7 +136,7 @@ namespace floating_island
 
                             this.playButton.update();
 
-                            if (this.playButton.pressed)
+                            if (this.playButton.pressed && selectedWorld >= 0 && selectedWorld < worlds.Count)
                             {
                                 worldLoaded = true;
                             }

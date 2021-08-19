@@ -677,17 +677,15 @@ namespace floating_island
                 //updating all the objects
                 int l = 1, pc = this.map_Objects.Count;
 
-                List<bool> completedList = new List<bool>();
+                List<Tuple<building, bool>> completedList = new List<Tuple<building, bool>>();
 
                 for (int i = 0; i < this.map_Objects.Count; i += l)
                 {
                     if (this.map_Objects[i].save_list()[0] == "#building")
                     {
-                        completedList.Add(((building)this.map_Objects[i]).itemsToComplete.Count <= 0);
-                    }
-                    else
-                    {
-                        completedList.Add(true);
+                        building tmpbuilding = (building)this.map_Objects[i];
+
+                        completedList.Add(new Tuple<building, bool>(tmpbuilding, tmpbuilding.itemsToComplete.Count <= 0));
                     }
                 }
                 
@@ -720,16 +718,11 @@ namespace floating_island
 
                 l = 1;
 
-                for (int i = 0; i < this.map_Objects.Count; i += l)
+                foreach(var currentBuilding in completedList)
                 {
-                    if (this.map_Objects[i].save_list()[0] == "#building")
+                    if((currentBuilding.Item1.itemsToComplete.Count<=0)!=currentBuilding.Item2)
                     {
-                        if ((((building)this.map_Objects[i]).itemsToComplete.Count <= 0) != completedList[i])
-                        {
-                            this.addResearchPoints(((building)this.map_Objects[i]).researchPointsAdded);
-
-                            completedList[i] = (((building)this.map_Objects[i]).itemsToComplete.Count <= 0);
-                        }
+                        this.addResearchPoints(currentBuilding.Item1.researchPointsAdded);
                     }
                 }
 
