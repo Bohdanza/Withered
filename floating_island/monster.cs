@@ -205,9 +205,9 @@ namespace floating_island
                 actchanged = true;
             }
 
-            map_object tmpObject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index);
+            map_object tmpObject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index, "#building");
 
-            if (tmpObject.save_list()[0] == "#building" && ((building)tmpObject).itemsToComplete.Count <= 0)
+            if (tmpObject != null && ((building)tmpObject).itemsToComplete.Count <= 0)
             {
                 if (tmpObject.getSmallestDist(this.x, this.y) <= this.speed * 3f)
                 {

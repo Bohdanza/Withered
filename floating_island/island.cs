@@ -15,13 +15,13 @@ namespace floating_island
 {
     public class island
     {
-        public const int crustWidth = 825;
-        public const int crustHeight = 572;
+        public const int crustWidth = 760;
+        public const int crustHeight = 517;
         
-        public const int crustXPos = 386;
-        public const int crustYPos = 228;
+        public const int crustXPos = 410;
+        public const int crustYPos = 323;
 
-        public const int waveDelay = 216000;
+        public const int waveDelay = 2000;
 
         public int timeSinceLastWave { get; private set; }
         public int waveNumber { get; private set; }
@@ -518,7 +518,7 @@ namespace floating_island
 
             return true;
         }
-
+        
         public void update(ContentManager cm)
         {
             this.timeSinceLastPress++;
@@ -551,6 +551,20 @@ namespace floating_island
                         float tmpy = (float)rnd.NextDouble();
 
                         if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[0].hp, this.monsterSamples[0])))
+                        {
+                            tmpc1++;
+                        }
+                    }
+                    
+                    tmpc1 = 0;
+                    tmpc =  (int)(0.25*this.waveNumber*this.waveNumber);
+
+                    while (tmpc1 < tmpc)
+                    {
+                        float tmpx = (float)rnd.NextDouble();
+                        float tmpy = (float)rnd.NextDouble();
+
+                        if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[1].hp, this.monsterSamples[1])))
                         {
                             tmpc1++;
                         }

@@ -27,6 +27,7 @@ namespace floating_island
         private int timeSinceShow = 0;
         private SpriteFont font;
         private MouseState oldState;
+        private TextDisplay testTextDisplay;
 
         public Game1()
         {

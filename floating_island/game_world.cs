@@ -69,7 +69,7 @@ namespace floating_island
                 this.sampleBuildings.Add(new building(cm, 0f, 0f, i)); 
             }
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 2; i++)
             {
                 this.sampleMonsters.Add(new monster(cm, i, 0f, 0f));
             }

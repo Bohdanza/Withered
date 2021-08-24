@@ -37,7 +37,7 @@ namespace floating_island
         {
             this.itemInHand = handItem;
 
-            this.speed = 0.005f;
+            this.speed = 0.003f;
             this.type = type;
 
             this.x = x;
@@ -296,6 +296,39 @@ namespace floating_island
             {
                 this.x = px;
                 this.y = py;
+
+                map_object tmpObject = my_island.getClosestObject(new Vector2(this.x, this.y), my_index);
+
+                float tmpx = 0;
+                float tmpy = 0;
+
+                while (!my_island.is_point_free(new Vector2(this.x + tmpx, this.y + tmpy), my_index))
+                {
+                    int rndr1 = rnd.Next(0, 2);
+
+                    if (rndr1 == 0)
+                    {
+                        tmpx = tmpObject.hitbox_left.X * (float)rnd.NextDouble() - this.speed;
+                    }
+                    else
+                    {
+                        tmpx = tmpObject.hitbox_right.X * (float)rnd.NextDouble() + this.speed;
+                    }
+
+                    rndr1 = rnd.Next(0, 2);
+
+                    if (rndr1 == 0)
+                    {
+                        tmpy = tmpObject.hitbox_left.Y * (float)rnd.NextDouble() - this.speed;
+                    }
+                    else
+                    {
+                        tmpy = tmpObject.hitbox_right.Y * (float)rnd.NextDouble() + this.speed;
+                    }
+                }
+
+                this.x += tmpx;
+                this.y += tmpy;
             }
 
             //updating texture
