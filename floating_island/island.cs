@@ -47,10 +47,10 @@ namespace floating_island
         private Texture2D crust;
         private Texture2D attentionDarkness, buildingMenuBackground, researchBackground;
 
-        private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose, cancelButton;
+        private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose, cancelButton, tutorialMenuOpen, tutorialMenuClose;
 
-        private bool buildingMenuClosed = true, researchMenuClosed = true;
-        private int draw_l, researchMenuPos=-900;
+        private bool buildingMenuClosed = true, researchMenuClosed = true, tutorialMenuClosed = true;
+        private int draw_l, researchMenuPos = -900, tutorialMenuPos = -900;
 
         private building selectedBuilding = null;
 
@@ -90,6 +90,7 @@ namespace floating_island
 
             this.buildingMenuClose = new button(0, 800 - (int)(tmptex.Width / 2), 876 - (int)(tmptex.Height * 1.1f), tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("s1hidebutton"));
 
+
             tmptex = cm.Load<Texture2D>("recmenuopen0");
 
             this.researchMenuOpen = new button(0, 15, this.buildingMenuOpen.y - (int)(tmptex.Height*1.1f), tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("recmenuopen1"));
@@ -97,6 +98,16 @@ namespace floating_island
             tmptex = cm.Load<Texture2D>("cross0");
 
             this.researchMenuClose = new button(0, 1452, 19, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("cross1"));
+
+
+            tmptex = cm.Load<Texture2D>("tutorialmenuopen0");
+
+            this.tutorialMenuOpen = new button(0, 15, this.researchMenuOpen.y - (int)(tmptex.Height * 1.1f), tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("tutorialmenuopen1"));
+
+            tmptex = cm.Load<Texture2D>("cross0");
+
+            this.tutorialMenuClose = new button(0, 1452, 19, tmptex.Width, tmptex.Height, tmptex, cm.Load<Texture2D>("cross1"));
+
 
             tmptex = cm.Load<Texture2D>("backbutton0");
 
@@ -529,7 +540,7 @@ namespace floating_island
                 this.ticks = 0;
             }
 
-            if (this.researchMenuClosed)
+            if (this.researchMenuClosed && this.tutorialMenuClosed)
             {
                 this.timeSinceLastWave++;
                 
@@ -584,7 +595,7 @@ namespace floating_island
             this.mx = (float)(this.currentState.X - crustXPos - this.draw_x) / crustWidth;
             this.my = (float)(this.currentState.Y - crustYPos - this.draw_y) / crustHeight;
 
-            if (this.selectedBuilding == null && this.researchMenuClosed)
+            if (this.selectedBuilding == null && this.researchMenuClosed && this.tutorialMenuClosed)
             {
                 this.researchMenuOpen.update();
 
@@ -594,19 +605,42 @@ namespace floating_island
                 {
                     this.researchMenuClosed = false;
                 }
+
+                this.tutorialMenuOpen.update();
+
+                this.tutorialMenuOpen.y = this.researchMenuOpen.y - (int)(this.tutorialMenuOpen.normal_texture.Height * 1.1f);
+
+                if(this.tutorialMenuOpen.pressed)
+                {
+                    this.tutorialMenuClosed = false;
+                }
             }
 
-            if (this.researchMenuClosed)
+            //updating buttons
+            if (this.researchMenuClosed && this.tutorialMenuClosed)
             {
+                //rolling rec and tutorial menus up
                 if (this.researchMenuPos > -900)
                 {
                     this.researchMenuPos -= 50;
-                    
+
                     this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.7f);
 
                     if (this.researchMenuPos < -900)
                     {
                         this.researchMenuPos = -900;
+                    }
+                }
+
+                if (this.tutorialMenuPos > -900)
+                {
+                    this.tutorialMenuPos -= 50;
+
+                    this.tutorialMenuClose.y = this.tutorialMenuPos + (int)(this.tutorialMenuClose.normal_texture.Height * 0.7f);
+
+                    if (this.tutorialMenuPos < -900)
+                    {
+                        this.tutorialMenuPos = -900;
                     }
                 }
 
@@ -702,7 +736,7 @@ namespace floating_island
                         completedList.Add(new Tuple<building, bool>(tmpbuilding, tmpbuilding.itemsToComplete.Count <= 0));
                     }
                 }
-                
+
                 for (int i = 0; i < this.map_Objects.Count; i += l)
                 {
                     try
@@ -732,9 +766,9 @@ namespace floating_island
 
                 l = 1;
 
-                foreach(var currentBuilding in completedList)
+                foreach (var currentBuilding in completedList)
                 {
-                    if((currentBuilding.Item1.itemsToComplete.Count<=0)!=currentBuilding.Item2)
+                    if ((currentBuilding.Item1.itemsToComplete.Count <= 0) != currentBuilding.Item2)
                     {
                         this.addResearchPoints(currentBuilding.Item1.researchPointsAdded);
                     }
@@ -750,7 +784,7 @@ namespace floating_island
                 //We need to keep our object list sorted by y axis to overlay images properly when drawing
                 //so we will sort them here in case if some objects were moved
                 this.map_Objects.Sort((a, b) => (a.y).CompareTo(b.y));
-                
+
                 //for building menu appear animation
                 if (this.buildingMenuClosed)
                 {
@@ -773,7 +807,7 @@ namespace floating_island
                     {
                         this.buildingMenuClose.y -= 10;
                         this.buildingMenuOpen.y -= 10;
-                        
+
                         if (this.buildingMenuClose.y < 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuClose.normal_texture.Height * 1.1f))
                         {
                             this.buildingMenuOpen.y = 900 - this.buildingMenuBackground.Height - (int)(this.buildingMenuOpen.normal_texture.Height * 1.1f);
@@ -782,8 +816,9 @@ namespace floating_island
                     }
                 }
             }
-            else
-            {
+            
+            if (this.tutorialMenuClosed && !this.researchMenuClosed)
+            {     
                 if (this.researchMenuPos < 0)
                 {
                     this.researchMenuClose.y = this.researchMenuPos + (int)(this.researchMenuClose.normal_texture.Height * 0.7f);
@@ -814,17 +849,28 @@ namespace floating_island
                 }
             }
 
-            //can be used for island y moving
-            //still unfinished
-           /* if (this.ticks % 15 == 0)
+            //for tutorial appear animation
+            if (this.researchMenuClosed && !this.tutorialMenuClosed)
             {
-                this.draw_y += this.draw_l;
-
-                if (this.draw_y < 0 || this.draw_y > 3)
+                if (this.tutorialMenuPos < 0)
                 {
-                    this.draw_l *= -1;
+                    this.tutorialMenuClose.y = this.tutorialMenuPos + (int)(this.tutorialMenuClose.normal_texture.Height * 0.7f);
+
+                    this.tutorialMenuPos += 50;
+
+                    if (this.tutorialMenuPos > 0)
+                    {
+                        this.tutorialMenuPos = 0;
+                    }
                 }
-            }*/
+
+                this.tutorialMenuClose.update();
+
+                if(this.tutorialMenuClose.pressed)
+                {
+                    this.tutorialMenuClosed = true;
+                }
+            }
         }
 
         public void draw(SpriteBatch spriteBatch)
@@ -874,7 +920,7 @@ namespace floating_island
                 this.researchPoints[i].draw(spriteBatch, start, (int)(this.researchPoints[i].getDrawRect().Y * 0.1f));
             }
 
-            //drawing Wave X sign
+            //drawing Wave N sign
             if (this.timeSinceLastWave <= 255)
             {
                 Vector2 vector = this.wavesFont.MeasureString("Wave " + this.waveNumber.ToString());
@@ -908,16 +954,22 @@ namespace floating_island
                     }
                 }
 
-                if (this.researchMenuClosed && this.researchMenuPos <= -900)
+                if (this.researchMenuClosed && this.tutorialMenuClosed && this.researchMenuPos <= -900 && this.tutorialMenuPos <= -900)
                 {
                     this.researchMenuOpen.draw(spriteBatch);
+                    this.tutorialMenuOpen.draw(spriteBatch);
                 }
-                else
+                else if (this.tutorialMenuClosed && (!this.researchMenuClosed || this.researchMenuPos > -900))
                 {
                     spriteBatch.Draw(this.researchBackground, new Vector2(0, this.researchMenuPos), Color.White);
                     this.researchMenuClose.draw(spriteBatch);
 
                     this.mainResearchTree.draw(spriteBatch, 800 - this.mainResearchTree.width / 2, 50 + this.researchMenuPos);
+                }
+                else if (this.researchMenuClosed && (!this.tutorialMenuClosed || this.tutorialMenuPos > -900))
+                {
+                    spriteBatch.Draw(this.researchBackground, new Vector2(0, this.tutorialMenuPos), Color.White);
+                    this.tutorialMenuClose.draw(spriteBatch);
                 }
             }
             else
