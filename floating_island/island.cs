@@ -49,8 +49,10 @@ namespace floating_island
 
         private button buildingMenuOpen, buildingMenuClose, researchMenuOpen, researchMenuClose, cancelButton, tutorialMenuOpen, tutorialMenuClose;
 
-        private bool buildingMenuClosed = true, researchMenuClosed = true, tutorialMenuClosed = true;
-        private int draw_l, researchMenuPos = -900, tutorialMenuPos = -900;
+        private TextDisplay tutorialText;
+
+        private bool buildingMenuClosed = true, researchMenuClosed = true, tutorialMenuClosed = true, tutorialTextShown = false;
+        private int draw_l, researchMenuPos = -900, tutorialMenuPos = -900, tutorialTextPos=901;
 
         private building selectedBuilding = null;
 
@@ -116,6 +118,13 @@ namespace floating_island
             this.buildingMenuBackground = cm.Load<Texture2D>("buildingbackground");
             this.researchBackground = cm.Load<Texture2D>("evomenu");
 
+            this.tutorialText = new TextDisplay(cm, cm.Load<SpriteFont>("menu_font"), @"info\global\tutorial", 40);
+
+            this.timeSinceLastPress = 0;
+
+            this.oldState = Mouse.GetState();
+            this.currentState = Mouse.GetState();
+
             if (Directory.Exists(path))
             {
                 if(this.Load(path, cm))
@@ -124,12 +133,7 @@ namespace floating_island
                 }
             }
 
-            this.oldState = Mouse.GetState();
-            this.currentState = Mouse.GetState();
-
             this.generate(0, cm);
-
-            this.timeSinceLastPress = 0;
         }
 
         private void generate(int biome, ContentManager cm)
@@ -532,6 +536,9 @@ namespace floating_island
         
         public void update(ContentManager cm)
         {
+            this.oldState = this.currentState; 
+            this.currentState = Mouse.GetState();
+
             this.timeSinceLastPress++;
             this.ticks++;
 
@@ -590,8 +597,6 @@ namespace floating_island
             }*/
             
             //getting mouse cursor position and converting it into island coords
-            this.currentState = Mouse.GetState();
-
             this.mx = (float)(this.currentState.X - crustXPos - this.draw_x) / crustWidth;
             this.my = (float)(this.currentState.Y - crustYPos - this.draw_y) / crustHeight;
 
@@ -638,9 +643,20 @@ namespace floating_island
 
                     this.tutorialMenuClose.y = this.tutorialMenuPos + (int)(this.tutorialMenuClose.normal_texture.Height * 0.7f);
 
-                    if (this.tutorialMenuPos < -900)
+                    if (this.tutorialMenuPos <= -900)
                     {
                         this.tutorialMenuPos = -900;
+                        this.tutorialTextPos = 901;
+                    }
+                }
+
+                if(this.tutorialTextPos<901)
+                {
+                    this.tutorialTextPos += 50;
+
+                    if(this.tutorialTextPos>901)
+                    {
+                        this.tutorialTextPos = 901;
                     }
                 }
 
@@ -779,8 +795,6 @@ namespace floating_island
                     this.timeSinceLastPress = 0;
                 }
 
-                this.oldState = this.currentState;
-
                 //We need to keep our object list sorted by y axis to overlay images properly when drawing
                 //so we will sort them here in case if some objects were moved
                 this.map_Objects.Sort((a, b) => (a.y).CompareTo(b.y));
@@ -864,11 +878,43 @@ namespace floating_island
                     }
                 }
 
+                if (!this.tutorialTextShown)
+                {
+                    if (this.tutorialTextPos > 0)
+                    {
+                        this.tutorialTextPos -= 50;
+
+                        if (this.tutorialTextPos < 0)
+                        {
+                            this.tutorialTextPos = 0;
+
+                            this.tutorialTextShown = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (this.oldState.ScrollWheelValue > currentState.ScrollWheelValue)
+                    {
+                        this.tutorialTextPos -= 100;
+                    }
+                    else if (this.oldState.ScrollWheelValue < currentState.ScrollWheelValue)
+                    {
+                        this.tutorialTextPos += 100;
+
+                        if (this.tutorialTextPos > 0)
+                        {
+                            this.tutorialTextPos = 0;
+                        }
+                    }
+                }
+
                 this.tutorialMenuClose.update();
 
                 if(this.tutorialMenuClose.pressed)
                 {
                     this.tutorialMenuClosed = true;
+                    this.tutorialTextShown = false;
                 }
             }
         }
@@ -970,6 +1016,8 @@ namespace floating_island
                 {
                     spriteBatch.Draw(this.researchBackground, new Vector2(0, this.tutorialMenuPos), Color.White);
                     this.tutorialMenuClose.draw(spriteBatch);
+
+                    this.tutorialText.draw(spriteBatch, 200, tutorialTextPos, Color.Black);
                 }
             }
             else

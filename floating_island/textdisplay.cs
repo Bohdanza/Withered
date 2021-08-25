@@ -49,7 +49,14 @@ namespace floating_island
                     {
                         for (int j = 1; j * this.maxLength <= text[i].Length; j++)
                         {
-                            text[i] = text[i].Insert(j * this.maxLength, "\n");
+                            int k = j * maxLength;
+
+                            while (text[i][k] != ' ' && k>=0)
+                            {
+                                k--;
+                            }
+
+                            text[i] = text[i].Insert(k, "\n"); 
                         }
                     }
                 }
