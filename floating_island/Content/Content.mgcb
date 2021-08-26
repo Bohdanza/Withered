@@ -4237,6 +4237,18 @@
 /processorParam:TextureFormat=Color
 /build:2building0True.png
 
+#begin 2item0True.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:2item0True.png
+
 #begin 2plant0no0.png
 /importer:TextureImporter
 /processor:TextureProcessor

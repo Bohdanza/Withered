@@ -44,7 +44,9 @@ namespace floating_island
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
 
-         //   _graphics.IsFullScreen = true;
+            this.Window.Title = "Withered";
+
+            //_graphics.IsFullScreen = true;
             _graphics.ApplyChanges();
         }
 

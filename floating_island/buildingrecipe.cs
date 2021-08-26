@@ -129,30 +129,31 @@ namespace floating_island
         
         public bool canBeResearched(List<ResearchPoint> researchPoints)
         {
-            var mouseState = Mouse.GetState();
-            Rectangle tmprect = new Rectangle(this.x, this.y, 87, 87);
+            List<Tuple<int, int>> tuples = new List<Tuple<int, int>>();
 
-            if (oldState.LeftButton != ButtonState.Pressed || mouseState.LeftButton != ButtonState.Released || !tmprect.Contains(mouseState.X, mouseState.Y))
+            foreach(var currentPoint in this.researchPointsNeeded)
             {
-                return false;
+                tuples.Add(new Tuple<int, int>(currentPoint.type, currentPoint.amount));
             }
 
-            List<ResearchPoint> tmplist = this.researchPointsNeeded;
-
+            //TODO
             foreach(var currentPoint in researchPoints)
             {
-                foreach(var currentPoint1 in tmplist)
+                bool b = true;
+
+                for (int i = 0; i < tuples.Count && b; i++)
                 {
-                    if(currentPoint1.type==currentPoint.type)
+                    if(currentPoint.type==tuples[i].Item1)
                     {
-                        currentPoint1.amount -= currentPoint.amount;
+                        tuples[i] = new Tuple<int, int>(tuples[i].Item1, tuples[i].Item2-currentPoint.amount);
+                        b = false;
                     }
                 }
             }
 
-            foreach(var currentPoint in tmplist)
+            foreach(var currentTuple in tuples)
             {
-                if (currentPoint.amount > 0)
+                if (currentTuple.Item2 > 0)
                 {
                     return false;
                 }
@@ -173,28 +174,7 @@ namespace floating_island
                     return false;
                 }
 
-                List<ResearchPoint> tmplist = this.researchPointsNeeded;
-
-                foreach (var currentPoint in researchPoints)
-                {
-                    foreach (var currentPoint1 in tmplist)
-                    {
-                        if (currentPoint1.type == currentPoint.type)
-                        {
-                            currentPoint1.amount -= currentPoint.amount;
-                        }
-                    }
-                }
-
-                foreach (var currentPoint in tmplist)
-                {
-                    if (currentPoint.amount > 0)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                return this.canBeResearched(researchPoints);
             }
 
             return false; 

@@ -21,7 +21,7 @@ namespace floating_island
         public const int crustXPos = 410;
         public const int crustYPos = 323;
 
-        public const int waveDelay = 2000;
+        public const int waveDelay = 3000;
 
         public int timeSinceLastWave { get; private set; }
         public int waveNumber { get; private set; }
@@ -583,9 +583,12 @@ namespace floating_island
                         float tmpx = (float)rnd.NextDouble();
                         float tmpy = (float)rnd.NextDouble();
 
-                        if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[0].hp, this.monsterSamples[0])))
+                        if (tmpy >= 0.9f && tmpx >= 0.45f && tmpx <= 0.55f)
                         {
-                            tmpc1++;
+                            if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[0].hp, this.monsterSamples[0])))
+                            {
+                                tmpc1++;
+                            }
                         }
                     }
                     
@@ -597,9 +600,12 @@ namespace floating_island
                         float tmpx = (float)rnd.NextDouble();
                         float tmpy = (float)rnd.NextDouble();
 
-                        if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[1].hp, this.monsterSamples[1])))
+                        if (tmpy >= 0.9f && tmpx >= 0.45f && tmpx <= 0.55f)
                         {
-                            tmpc1++;
+                            if (this.add_object(new monster(cm, tmpx, tmpy, this.monsterSamples[1].hp, this.monsterSamples[1])))
+                            {
+                                tmpc1++;
+                            }
                         }
                     }
                 }
