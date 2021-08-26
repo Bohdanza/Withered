@@ -1,0 +1,23 @@
+RESEARCHES
+
+Researches is the way to discover and create new types of buildings. To start this process you need to press the research button as shown:
+#image#tutorec0
+Then you'll see this menu:
+#image#tutorec1
+To make a research you need to have required number of research points (you'll see it if your cursor is on the research slot). To obtain them you need to build an obelisk (see "Building").
+#image#0building0recipe
+Each one gives you research point (RP). When you have enough RP you can make a research. Notice that RP would not dissapear, so, for example, if you have 5 RP you can learn research that needs 3 RP and you'll still have 5 RP.
+You can see your points at the right top corner:
+#image#tutorec2
+Researches gives you new buildings, which would give you resources, protect your colony etc.
+
+BUILDING
+
+Once you have done some researches (or even before this, to obtain RP) you need to build something. To start this, open menu in the bottom, where you'll see a list of buildings that you can potentially create.
+#image#tutobuild0
+You can place any building on the map if you have enough space, but it must be completed to perform it's functions. Each building have some resources to be delivered before it'll be completed. If such resource exists on the map it'll be automatically delivered.
+With such mechanics you can "order" any number of buildings but only some of them would be completed.
+#image#tutobuild1
+
+DEFENCE
+TODO:write this chapter

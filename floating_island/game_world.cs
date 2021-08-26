@@ -59,12 +59,12 @@ namespace floating_island
                 this.sample_plant_list.Add(new plant(cm, 0, 0, i, 0));
             }
             
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 this.sample_item_list.Add(new item(cm, 0, 0, i, true, 0));
             }
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 9; i++)
             {
                 this.sampleBuildings.Add(new building(cm, 0f, 0f, i)); 
             }

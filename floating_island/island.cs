@@ -215,6 +215,21 @@ namespace floating_island
                 }
             }
 
+
+            tmp_c = 3;
+            c = 0;
+
+            while (c < tmp_c)
+            {
+                float tmpx = (float)rnd.NextDouble();
+                float tmpy = (float)rnd.NextDouble();
+
+                if (this.add_object(new item(cm, tmpx, tmpy, 3, true, 1, item_samples[3])))
+                {
+                    c++;
+                }
+            }
+
             int tmp_count, l;
 
             //adding heroes

@@ -33,7 +33,7 @@ namespace floating_island
                 int l = 1;
 
                 for (int i = 0; i < text.Count; i+=l)
-                {
+                {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
                     l = 1;
 
                     if (text[i][0] == '#')
