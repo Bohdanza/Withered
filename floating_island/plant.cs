@@ -37,7 +37,7 @@ namespace floating_island
 
             this.grow_stage = grow_stage;
 
-            using(StreamReader sr = new StreamReader(@"info\global\plants\" + this.type.ToString() + @"\main_info"))
+            using(StreamReader sr = new StreamReader(@"info/global/plants/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmp_list = sr.ReadToEnd().Split('\n').ToList();
 
@@ -84,12 +84,21 @@ namespace floating_island
             {
                 this.textures = new List<Texture2D>();
                 this.img_phase = 0;
+               
+                bool tmpbool = true;
 
-                while(File.Exists(@"Content\" + this.type.ToString() + "plant" + this.img_phase.ToString() + this.action + this.grow_stage.ToString() + ".xnb"))
+                while (tmpbool)
                 {
-                    this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "plant" + this.img_phase.ToString() + this.action + this.grow_stage.ToString()));
+                    try
+                    {
+                        this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "plant" + this.img_phase.ToString() + this.action + this.grow_stage.ToString()));
 
-                    this.img_phase++;
+                        this.img_phase++;
+                    }
+                    catch 
+                    {
+                        tmpbool = false;
+                    }
                 }
 
                 this.img_phase = 0;
@@ -143,6 +152,11 @@ namespace floating_island
             this.y = newCoords.Y;
 
             return true;
+        }
+
+        public override Texture2D GetTexture()
+        {
+            return textures[img_phase];
         }
     }
 }

@@ -55,7 +55,7 @@ namespace floating_island
 
             this.type = type;
 
-            using (StreamReader sr = new StreamReader(@"info\global\buildings\" + this.type.ToString() + @"\main_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/buildings/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmp_list = sr.ReadToEnd().Split('\n').ToList();
 
@@ -142,7 +142,7 @@ namespace floating_island
 
             this.type = type;
 
-            using (StreamReader sr = new StreamReader(@"info\global\buildings\" + this.type.ToString() + @"\main_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/buildings/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmp_list = sr.ReadToEnd().Split('\n').ToList();
 
@@ -349,7 +349,7 @@ namespace floating_island
 
                 bool tmpf = this.itemsToComplete.Count <= 0;
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "building" + this.imgPhase.ToString() + tmpf.ToString() + ".xnb"))
+                while (File.Exists(@"Content/" + this.type.ToString() + "building" + this.imgPhase.ToString() + tmpf.ToString() + ".xnb"))
                 {
                     this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "building" + this.imgPhase.ToString() + tmpf.ToString()));
 
@@ -362,7 +362,7 @@ namespace floating_island
                 this.recipeTextures = new List<Texture2D>();
                 this.recipeImgPhase = 0;
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "building" + this.recipeImgPhase.ToString() + "recipe" + ".xnb"))
+                while (File.Exists(@"Content/" + this.type.ToString() + "building" + this.recipeImgPhase.ToString() + "recipe" + ".xnb"))
                 {
                     this.recipeTextures.Add(cm.Load<Texture2D>(this.type.ToString() + "building" + this.recipeImgPhase.ToString() + "recipe"));
 
@@ -483,6 +483,29 @@ namespace floating_island
             spriteBatch.Draw(this.recipeTextures[this.recipeImgPhase], new Vector2(x, y), Color.White);
         }
 
+        //TODO: You know what u need to do
+        public void drawNeededItems(SpriteBatch spriteBatch, int x, int y, SpriteFont font, Color color)
+        {
+            int currentX = 0;
+
+            foreach(var currentItem in this.itemsToComplete)
+            {
+                currentItem.draw(spriteBatch, x + currentX, y);
+
+                currentX += currentItem.GetTexture().Width;
+
+                spriteBatch.DrawString(font, currentItem.number.ToString(), new Vector2(x + currentX, y), color);
+
+                currentX += (int)(font.MeasureString(currentItem.number.ToString()).X * 1.1f);
+            }
+        }
+
+        //And here the same
+        public void drawDescription(SpriteBatch spriteBatch, int x, int y, SpriteFont font)
+        {
+
+        }
+
         public override bool contains_point(Vector2 point)
         {
             if (point.X >= this.x + hitbox_left.X && point.Y >= this.y + hitbox_left.Y && point.X <= this.x + hitbox_right.X && point.Y <= this.y + hitbox_right.Y)
@@ -580,6 +603,11 @@ namespace floating_island
             this.y = newCoords.Y;
 
             return true;
+        }
+
+        public override Texture2D GetTexture()
+        {
+            return textures[imgPhase];
         }
     }
 }

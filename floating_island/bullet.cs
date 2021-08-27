@@ -42,7 +42,7 @@ namespace floating_island
             this.x = x;
             this.y = y;
 
-            using (StreamReader sr = new StreamReader(@"info\global\bullets\" + this.type.ToString() + @"\main_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/bullets/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmpList = sr.ReadToEnd().Split('\n').ToList();
 
@@ -91,7 +91,7 @@ namespace floating_island
 
                 this.imgPhase = 0;
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "bullet" + this.imgPhase.ToString() + ".xnb"))
+                while (File.Exists(@"Content/" + this.type.ToString() + "bullet" + this.imgPhase.ToString() + ".xnb"))
                 {
                     this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "bullet" + this.imgPhase.ToString()));
                     this.imgPhase++;
@@ -148,6 +148,11 @@ namespace floating_island
             tmplist.Add(this.degDirection.ToString());
 
             return tmplist;
+        }
+
+        public override Texture2D GetTexture()
+        {
+            return textures[imgPhase];
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace floating_island
 {
-    public class map_object
+    public abstract class map_object
     {
         public virtual float x { get; protected set; }
         public virtual float y { get; protected set; }
@@ -92,5 +92,7 @@ namespace floating_island
 
             return (float)Math.Sqrt(tmpx * tmpx + tmpy * tmpy);
         }
+
+        public abstract Texture2D GetTexture();
     }
 }

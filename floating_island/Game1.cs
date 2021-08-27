@@ -45,7 +45,7 @@ namespace floating_island
             _graphics.ApplyChanges();
 
             this.Window.Title = "Withered";
-
+            
             //_graphics.IsFullScreen = true;
             _graphics.ApplyChanges();
         }
@@ -53,7 +53,7 @@ namespace floating_island
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            worlds = Directory.EnumerateDirectories(@"info\worlds\").ToList();
+            worlds = Directory.EnumerateDirectories(@"info/worlds/").ToList();
 
             for (int i = 0; i < worlds.Count; i++)
             {
@@ -122,11 +122,11 @@ namespace floating_island
                     {
                         if (this.worldLoaded && this.main_world == null)
                         {
-                            this.main_world = new game_world(this.Content, @"info\worlds\" + worlds[selectedWorld]);
+                            this.main_world = new game_world(this.Content, @"info/worlds/" + worlds[selectedWorld]);
                         }
                         else if (worldCreated && main_world == null)
                         {
-                            main_world = new game_world(Content, @"info\worlds\" + textSpace.currentString);
+                            main_world = new game_world(Content, @"info/worlds/" + textSpace.currentString);
                         }
                         else
                         {

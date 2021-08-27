@@ -118,7 +118,7 @@ namespace floating_island
             this.buildingMenuBackground = cm.Load<Texture2D>("buildingbackground");
             this.researchBackground = cm.Load<Texture2D>("evomenu");
 
-            this.tutorialText = new TextDisplay(cm, cm.Load<SpriteFont>("menu_font"), @"info\global\tutorial", 40);
+            this.tutorialText = new TextDisplay(cm, cm.Load<SpriteFont>("menu_font"), @"info/global/tutorial", 40);
 
             this.timeSinceLastPress = 0;
 
@@ -151,7 +151,7 @@ namespace floating_island
             }
 
             //initializing recipe tree
-            using (StreamReader sr = new StreamReader(@"info\global\recipes\tree_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/recipes/tree_info"))
             {
                 List<researchRecipe> tmpres = new List<researchRecipe>();
 
@@ -230,7 +230,7 @@ namespace floating_island
                 }
             }
 
-            int tmp_count, l;
+            int l;
 
             //adding heroes
             c = 0;
@@ -266,7 +266,7 @@ namespace floating_island
             //preparing path
             if(path[path.Length-1]!=97&& path[path.Length - 1] != 47)
             {
-                path += @"\";
+                path += @"/";
             }
 
             if(!Directory.Exists(path))
@@ -369,7 +369,7 @@ namespace floating_island
             {
                 if (path[path.Length - 1] != '\\' && path[path.Length - 1] != '/')
                 {
-                    path += @"\";
+                    path += @"/";
                 }
 
                 if (!File.Exists(path + "researches") || !File.Exists(path + "map_objects"))

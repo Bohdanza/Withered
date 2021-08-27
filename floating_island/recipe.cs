@@ -24,7 +24,7 @@ namespace floating_island
             this.type = type;
             this.frame_texture = cm.Load<Texture2D>("frame");
 
-            using(StreamReader sr = new StreamReader(@"info\global\recipes\" + this.type.ToString() + @"\main_info"))
+            using(StreamReader sr = new StreamReader(@"info/global\recipes/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmp_str_list = sr.ReadToEnd().Split('\n').ToList();
 

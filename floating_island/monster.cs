@@ -42,7 +42,7 @@ namespace floating_island
             this.x = x;
             this.y = y;
 
-            using (StreamReader sr = new StreamReader(@"info\global\monsters\" + this.type.ToString() + @"\main_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/monsters/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
 
@@ -80,7 +80,7 @@ namespace floating_island
             this.x = x;
             this.y = y;
 
-            using (StreamReader sr = new StreamReader(@"info\global\monsters\" + this.type.ToString() + @"\main_info"))
+            using (StreamReader sr = new StreamReader(@"info/global/monsters/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
 
@@ -284,7 +284,7 @@ namespace floating_island
 
                 this.imgPhase = 0;
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "monster" + this.action + this.direction + this.imgPhase.ToString() + ".xnb"))
+                while (File.Exists(@"Content/" + this.type.ToString() + "monster" + this.action + this.direction + this.imgPhase.ToString() + ".xnb"))
                 {
                     this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "monster" + this.action + this.direction + this.imgPhase.ToString()));
 
@@ -321,6 +321,11 @@ namespace floating_island
             tmplist.Add(this.hp.ToString());
 
             return tmplist;
+        }
+
+        public override Texture2D GetTexture()
+        {
+            return textures[imgPhase];
         }
     }
 }

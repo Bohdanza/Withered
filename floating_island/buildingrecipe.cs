@@ -38,7 +38,7 @@ namespace floating_island
             this.researched = researched;
             this.parentType = parentType;
 
-            using(StreamReader sr = new StreamReader(@"info\global\recipes\" + this.type.ToString() + @"\main_info"))
+            using(StreamReader sr = new StreamReader(@"info/global/recipes/" + this.type.ToString() + @"/main_info"))
             {
                 List<string> tmplist = sr.ReadToEnd().Split('\n').ToList();
 

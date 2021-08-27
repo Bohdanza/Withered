@@ -349,7 +349,7 @@ namespace floating_island
                 this.img_phase = 0;
                 this.textures = new List<Texture2D>();
 
-                while (File.Exists(@"Content\" + this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString() + ".xnb"))
+                while (File.Exists(@"Content/" + this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString() + ".xnb"))
                 {
                     this.textures.Add(cm.Load<Texture2D>(this.type.ToString() + "hero" + this.action + this.direction + this.img_phase.ToString()));
 
@@ -517,6 +517,11 @@ namespace floating_island
             this.y = newCoords.Y;
 
             return true;
+        }
+
+        public override Texture2D GetTexture()
+        {
+            return textures[img_phase];
         }
     }
 }

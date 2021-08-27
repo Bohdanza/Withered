@@ -35,7 +35,7 @@ namespace floating_island
 
             if (this.path[this.path.Length - 1] != 97 && this.path[this.path.Length - 1] != 47)
             {
-                this.path += @"\";
+                this.path += @"/";
             }
 
             try
@@ -74,7 +74,7 @@ namespace floating_island
                 this.sampleMonsters.Add(new monster(cm, i, 0f, 0f));
             }
 
-            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.sampleBuildings, this.sampleMonsters, this.path + @"islands\0");
+            this.mainIsland = new island(cm, this.sample_plant_list, this.sample_item_list, this.sampleBuildings, this.sampleMonsters, this.path + @"islands/0");
         }
 
         public void update(ContentManager cm)
@@ -108,7 +108,7 @@ namespace floating_island
         {
             //this shit must be fixed later
 
-            this.mainIsland.save(this.path+@"islands\0", cm);
+            this.mainIsland.save(this.path+@"islands/0", cm);
         }
     }
 }
