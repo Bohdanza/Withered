@@ -35,6 +35,8 @@ namespace floating_island
         public bullet bulletShooting;
         public int speed { get; private set; }
         public int timeSinceLastAttack { get; private set; } = 0;
+        public List<Recipe> recipes { get; private set; }
+        public Recipe currentRecipe;
 
         /// <summary>
         /// initializing with file reading, hp is filled to max

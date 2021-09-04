@@ -215,7 +215,6 @@ namespace floating_island
                 }
             }
 
-
             tmp_c = 3;
             c = 0;
 
@@ -234,7 +233,7 @@ namespace floating_island
 
             //adding heroes
             c = 0;
-
+            
             while (c < 1)
             {
                 float tmpx = (float)rnd.NextDouble();

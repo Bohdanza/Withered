@@ -11,90 +11,189 @@ using System.Runtime.InteropServices;
 
 namespace floating_island
 {
-    public class recipe
+    public class Recipe
     {
         public int type { get; private set; }
-        public List<item> craftItems { get; private set; } = new List<item>();
-        public List<bool> usage_list { get; private set; } = new List<bool>();
-        public List<item> resultItems { get; private set; } = new List<item>();
-        public Texture2D frame_texture { get; private set; }
+        public List<item> neededItems { get; private set; }
+        public List<item> currentNeededItems { get; private set; }
+        public List<item> results { get; private set; }
+        private ContentManager contentManager;
 
-        public recipe(ContentManager cm, int type, List<item> item_samples)
+        /// <summary>
+        /// initializing with file reading
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name=""></param>
+        public Recipe(int type, ContentManager contentManager)
         {
+            this.contentManager = contentManager;
+
+            currentNeededItems = new List<item>();
+            results = new List<item>();
+            neededItems = new List<item>();
+
             this.type = type;
-            this.frame_texture = cm.Load<Texture2D>("frame");
 
-            using(StreamReader sr = new StreamReader(@"info/global\recipes/" + this.type.ToString() + @"/main_info"))
+            using (StreamReader sr = new StreamReader(@"info\global\recipes\" + this.type.ToString() + @"\main_info"))
             {
-                List<string> tmp_str_list = sr.ReadToEnd().Split('\n').ToList();
+                List<string> tmp_list = sr.ReadToEnd().Split('\n').ToList();
 
-                int tmp_c=Int32.Parse(tmp_str_list[0]);
-                int current_str=1;
+                int current_line, tmpn = Int32.Parse(tmp_list[0]);
 
-                for(int i=0; i<tmp_c; i++)
+                for (current_line = 1; current_line <= tmpn * 2; current_line += 2)
                 {
-                    int tmp_type = Int32.Parse(tmp_str_list[current_str]);
-                    int amount = Int32.Parse(tmp_str_list[current_str + 1]);
-                    bool b = bool.Parse(tmp_str_list[current_str + 2]);
-
-                    this.craftItems.Add(new item(cm, 0, 0, tmp_type, false, amount, item_samples[tmp_type]));
-                    this.usage_list.Add(b);
-
-                    current_str += 3;
+                    neededItems.Add(new item(contentManager, 0f, 0f, Int32.Parse(tmp_list[current_line]), false, Int32.Parse(tmp_list[current_line + 1])));
                 }
 
-                tmp_c = Int32.Parse(tmp_str_list[current_str]);
-                current_str++;
+                tmpn = Int32.Parse(tmp_list[current_line]) * 2 + current_line;
 
-                for(int i=0; i<tmp_c; i++)
+                for (current_line++; current_line < tmpn; current_line += 2)
                 {
-                    int tmp_type = Int32.Parse(tmp_str_list[current_str]);
-                    int amount = Int32.Parse(tmp_str_list[current_str + 1]);
-
-                    this.resultItems.Add(new item(cm, 0, 0, tmp_type, false, amount, item_samples[tmp_type]));
+                    results.Add(new item(contentManager, 0f, 0f, Int32.Parse(tmp_list[current_line]), false, Int32.Parse(tmp_list[current_line + 1])));
                 }
             }
         }
 
-        public void update(ContentManager cm)
+        /// <summary>
+        /// initialing with file reading, item samples must be given
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="contentManager"></param>
+        public Recipe(int type, ContentManager contentManager, List<item> sampleItems)
         {
-            foreach(var current_item in this.craftItems)
-            {
-                current_item.update(cm);
-            }
+            this.contentManager = contentManager;
 
-            foreach (var current_item in this.resultItems)
+            currentNeededItems = new List<item>();
+            results = new List<item>();
+            neededItems = new List<item>();
+
+            this.type = type;
+
+            using (StreamReader sr = new StreamReader(@"info\global\recipes\" + this.type.ToString() + @"\main_info"))
             {
-                current_item.update(cm);
+                List<string> tmp_list = sr.ReadToEnd().Split('\n').ToList();
+
+                int current_line, tmpn = Int32.Parse(tmp_list[0]);
+
+                for (current_line = 1; current_line <= tmpn * 2; current_line += 2)
+                {
+                    int tmptype = Int32.Parse(tmp_list[current_line]);
+
+                    neededItems.Add(new item(contentManager, 0f, 0f, tmptype, false, Int32.Parse(tmp_list[current_line + 1]), sampleItems[tmptype]));
+                }
+
+                tmpn = Int32.Parse(tmp_list[current_line]) * 2 + current_line;
+
+                for (current_line++; current_line < tmpn; current_line += 2)
+                {
+                    int tmptype = Int32.Parse(tmp_list[current_line]);
+
+                    results.Add(new item(contentManager, 0f, 0f, tmptype, false, Int32.Parse(tmp_list[current_line + 1]), sampleItems[tmptype]));
+                }
             }
         }
 
-        public void draw_result(SpriteBatch spriteBatch, int x, int y)
+        /// <summary>
+        /// initializing with sample 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="contentManager"></param>
+        /// <param name="sampleRecipe"></param>
+        public Recipe(int type, ContentManager contentManager, Recipe sampleRecipe)
         {
-            int current_coord = x;
+            this.contentManager = contentManager;
 
-            foreach(var current_item in this.resultItems)
+            this.type = type;
+
+            this.neededItems = sampleRecipe.getNeeded(contentManager);
+            this.results = sampleRecipe.getResults(contentManager);
+
+            this.currentNeededItems = new List<item>();
+        }
+
+        public bool addItem(item itemToAdd)
+        {
+            //Normal system with content managers must be developed
+            item tmpitem = new item(contentManager, 0f, 0f, itemToAdd.type, false, itemToAdd.number, itemToAdd);
+
+            int l = 1;
+            bool f = false;
+
+            for (int i = 0; i < this.currentNeededItems.Count; i+=l)
             {
-                spriteBatch.Draw(frame_texture, new Vector2(current_coord, y), Color.White);
+                l = 1;
 
-                current_item.draw(spriteBatch, current_coord, y);
+                if (currentNeededItems[i].type == tmpitem.type)
+                {
+                    f = true;
 
-                current_coord += (int)(this.frame_texture.Width*1.1f);
+                    int tmpnumber = currentNeededItems[i].number;
+
+                    currentNeededItems[i].number -= tmpitem.number;
+
+                    tmpitem.number -= tmpnumber;
+
+                    if (tmpitem.number <= 0)
+                    {
+                        currentNeededItems.RemoveAt(i);
+                        l = 0;
+                    }
+
+                    if (tmpnumber <= 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return f;
+        }
+
+        public bool itemCanBeAdded(item itemToAdd)
+        {
+            foreach(var currentItem in currentNeededItems)
+            {
+                if (currentItem.type == itemToAdd.type)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void resetCurrent(ContentManager cm)
+        {
+            currentNeededItems = new List<item>();
+
+            foreach (var currentItem in neededItems)
+            {
+                currentNeededItems.Add(new item(cm, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
         }
 
-        public void draw_crafting(SpriteBatch spriteBatch, int x, int y)
+        public List<item> getNeeded(ContentManager contentManager)
         {
-            int current_coord = x;
+            List<item> tmplist = new List<item>();
 
-            foreach (var current_item in this.craftItems)
+            foreach(var currentItem in neededItems)
             {
-                spriteBatch.Draw(frame_texture, new Vector2(current_coord, y), Color.White);
-
-                current_item.draw(spriteBatch, current_coord, y);
-
-                current_coord += (int)(this.frame_texture.Width * 1.1f);
+                tmplist.Add(new item(contentManager, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
             }
+
+            return tmplist;
+        }
+
+        public List<item> getResults(ContentManager contentManager)
+        {
+            List<item> tmplist = new List<item>();
+
+            foreach (var currentItem in results)
+            {
+                tmplist.Add(new item(contentManager, 0f, 0f, currentItem.type, false, currentItem.number, currentItem));
+            }
+
+            return tmplist;
         }
     }
 }
